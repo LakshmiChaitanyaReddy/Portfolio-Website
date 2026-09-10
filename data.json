@@ -9,7 +9,7 @@
     "email": "lakshmichaitanyareddyi@gmail.com",
     "phone": "+91 9959749269",
     "resumeUrl": "/LakshmiChaitanyaReddy_ServiceNowDev.pdf",
-    "siteUrl": "SITE_URL",
+    "siteUrl": "/LakshmiChaitanyaReddy_ServiceNowDev.pdf",
     "ogImage": "og-image.png",
     "about": [
       "I'm a ServiceNow developer with {{years}}+ years of experience designing and shipping solutions across Customer Service Management, HRSD and ITSM. Most of my work sits where the platform meets everything else: eBonding integrations, CMDB alignment, REST/SOAP services, and the custom scripting that holds a real business process together.",
@@ -19,17 +19,17 @@
     "links": [
       {
         "label": "LinkedIn",
-        "url": "LINKEDIN_URL",
+        "url": "https://www.linkedin.com/in/lakshmi-chaitanya-reddy-idamakanti-235a1b212/",
         "icon": "linkedin"
       },
       {
         "label": "GitHub",
-        "url": "GITHUB_URL",
+        "url": "https://github.com/LakshmiChaitanyaReddy",
         "icon": "github"
       },
       {
         "label": "ServiceNow Community",
-        "url": "SERVICENOW_COMMUNITY_URL",
+        "url": "https://www.servicenow.com/community/user/viewprofilepage/user-id/24805",
         "icon": "globe"
       }
     ]
