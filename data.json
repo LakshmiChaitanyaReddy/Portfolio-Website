@@ -1,0 +1,162 @@
+{
+  "profile": {
+    "name": "Lakshmi Chaitanya Reddy Idamakanti",
+    "shortName": "Chaitanya Reddy",
+    "title": "Senior ServiceNow Developer",
+    "tagline": "I build the workflows, integrations and custom applications that make ServiceNow actually work for the people using it — across CSM, HRSD and ITSM, with {{years}}+ years of production delivery behind me.",
+    "status": "Open to ServiceNow platform roles",
+    "location": "Hyderabad, India",
+    "email": "lakshmichaitanyareddyi@gmail.com",
+    "phone": "+91 9959749269",
+    "resumeUrl": "resume.pdf",
+    "siteUrl": "SITE_URL",
+    "ogImage": "og-image.png",
+    "about": [
+      "I'm a ServiceNow developer with {{years}}+ years of experience designing and shipping solutions across Customer Service Management, HRSD and ITSM. Most of my work sits where the platform meets everything else: eBonding integrations, CMDB alignment, REST/SOAP services, and the custom scripting that holds a real business process together.",
+      "Day to day that means Flow Designer automations, Script Includes and Business Rules written to be readable a year later, Service Portal widgets and UI Builder components, and integration layers designed to be reused rather than rebuilt for every customer. I care about ITIL-sane process design, ACLs that actually hold, and handing business users tooling they can run without me.",
+      "Outside of delivery I use enterprise-approved AI tooling to audit custom applications and map end-to-end platform architecture ahead of migrations — the unglamorous documentation work that makes the risky changes survivable."
+    ],
+    "links": [
+      { "label": "LinkedIn", "url": "LINKEDIN_URL", "icon": "linkedin" },
+      { "label": "GitHub", "url": "GITHUB_URL", "icon": "github" },
+      { "label": "ServiceNow Community", "url": "SERVICENOW_COMMUNITY_URL", "icon": "globe" }
+    ]
+  },
+
+  "experience": [
+    {
+      "id": "exp-fanatics",
+      "company": "Fanatics",
+      "role": "Senior ServiceNow Developer",
+      "startDate": "2026-05",
+      "endDate": null,
+      "location": "Hyderabad, India",
+      "summary": "Platform development and migration groundwork for a large custom ServiceNow estate.",
+      "highlights": [
+        "**AI-driven workflow & integration optimisation** — used enterprise-approved AI tooling and the ServiceNow SDK to audit custom applications, automate repetitive design work, and map end-to-end architecture diagrams for platform migration planning.",
+        "**Slack Spoke & multi-channel approvals** — engineered dynamic approval payloads with Flow Designer and REST integrations so requests and notifications move across platforms without manual chasing.",
+        "**Migration strategy** — documented current-state architecture and dependency maps to de-risk moving custom applications between instances."
+      ],
+      "tech": ["Flow Designer", "REST", "Slack Spoke", "ServiceNow SDK"]
+    },
+    {
+      "id": "exp-fis",
+      "company": "FIS",
+      "role": "Software Engineer II",
+      "startDate": "2022-06",
+      "endDate": "2026-03",
+      "location": "Hyderabad, India",
+      "summary": "End-to-end CSM and ITSM delivery: scripting, integrations, portal work and the testing around it.",
+      "highlights": [
+        "**CSM & ITSM implementation** — architected and customised CSM cases alongside Incident, Problem, Change and Catalog, keeping solution design aligned to ITIL practice.",
+        "**Server & client scripting** — authored Script Includes, Business Rules, UI Policies and Glide API logic for complex CRUD operations and workflow execution.",
+        "**Flow Designer & process automation** — configured OOTB workflows and built custom flows for case routing, request fulfilment and incident auto-prioritisation.",
+        "**CMDB & API integrations** — developed eBonding integrations over REST/SOAP connecting third-party enterprise platforms to CMDB data models.",
+        "**Service Portal & UI Builder** — built and enhanced custom widgets and UI Builder components that improved external user engagement and internal support usability.",
+        "**Testing & quality assurance** — authored UAT scripts, led functional validation, and ran root-cause troubleshooting to keep the platform stable.",
+        "**Agile & governance** — participated in Agile ceremonies and stakeholder design reviews, enforcing platform controls through ACLs and secure API protocols."
+      ],
+      "tech": [
+        "CSM", "ITSM", "Script Includes", "Business Rules", "Glide APIs",
+        "REST", "SOAP", "CMDB", "Service Portal", "UI Builder", "Flow Designer"
+      ]
+    }
+  ],
+
+  "projects": [
+    {
+      "id": "proj-csm-itsm",
+      "title": "CSM–ITSM Customer Incident Communication Framework",
+      "featured": true,
+      "blurb": "Bidirectional REST sync that keeps customers and engineers looking at the same truth.",
+      "problem": "Customer-facing CSM cases and internal ITSM incidents lived in separate worlds, so customers had to call in for updates that already existed inside the platform.",
+      "approach": "Built a bidirectional REST sync between CSM cases and ITSM incidents with mapped state models and event-driven proactive notifications.",
+      "result": "Real-time status parity across both records and a measurable drop in tier-1 \"any update?\" inquiry load.",
+      "tech": ["CSM", "ITSM", "REST", "Business Rules"],
+      "links": []
+    },
+    {
+      "id": "proj-jira-migration",
+      "title": "JIRA → ServiceNow Data Migration",
+      "featured": true,
+      "blurb": "200K+ records moved with reconciliation checks and no performance debt left behind.",
+      "problem": "200K+ historical records sat in JIRA while delivery had already moved to ServiceNow, splitting history across two systems.",
+      "approach": "Wrote custom REST migration scripts on Glide APIs with batching, field mapping, reconciliation checks and post-migration query tuning.",
+      "result": "All 200K+ records migrated with zero data loss and no degradation in platform performance afterwards.",
+      "tech": ["Glide APIs", "REST", "Data Migration"],
+      "links": []
+    },
+    {
+      "id": "proj-ebonding",
+      "title": "eBonding & CMDB Integration Framework",
+      "featured": false,
+      "blurb": "A reusable integration spine instead of one-off connectors.",
+      "problem": "Every new customer integration was written from scratch, so external data landed in CMDB inconsistently and maintenance costs compounded.",
+      "approach": "Designed a reusable eBonding architecture over REST/SOAP with a shared transform layer, error handling and retry semantics mapped to CMDB classes.",
+      "result": "New customer connections became a configuration exercise instead of a build, with consistent, trustworthy CMDB records.",
+      "tech": ["eBonding", "REST", "SOAP", "CMDB"],
+      "links": []
+    },
+    {
+      "id": "proj-catalog-builder",
+      "title": "Catalog Builder Enablement",
+      "featured": false,
+      "blurb": "Handed catalog authoring to the business without handing over the guardrails.",
+      "problem": "Every new catalog item — however trivial — queued behind the development team, stretching lead times for the business.",
+      "approach": "Configured Catalog Builder with guarded templates and supporting custom flows so non-technical owners could author and publish items within governance rails.",
+      "result": "Business users publish catalog items independently, and development lead time is reserved for work that genuinely needs code.",
+      "tech": ["Catalog Builder", "Flow Designer", "Service Catalog"],
+      "links": []
+    },
+    {
+      "id": "proj-slack-approvals",
+      "title": "Slack Spoke & Multi-Channel Approvals",
+      "featured": false,
+      "blurb": "Approvals delivered where the approvers already are.",
+      "problem": "Approvals stalled because approvers lived in Slack while the requests lived in ServiceNow, so nothing moved until someone chased it.",
+      "approach": "Engineered dynamic approval payloads in Flow Designer, delivered through the Slack Spoke and REST integrations with context-aware routing.",
+      "result": "Approvals happen in-channel, with cross-platform notifications keeping requesters informed automatically.",
+      "tech": ["Flow Designer", "Slack Spoke", "REST"],
+      "links": []
+    }
+  ],
+
+  "skills": [
+    {
+      "category": "Core Modules",
+      "icon": "layout-grid",
+      "items": ["Incident", "Change", "Problem", "Service Catalog", "CSM", "HRSD", "CMDB"]
+    },
+    {
+      "category": "Platform & UI",
+      "icon": "workflow",
+      "items": ["Flow Designer", "Service Portal", "Portal Widgets", "UI Builder", "Catalog Builder", "UI Policies", "ACLs"]
+    },
+    {
+      "category": "Scripting & APIs",
+      "icon": "code-2",
+      "items": ["JavaScript (GlideScript)", "Script Includes", "Business Rules", "Glide APIs", "REST APIs", "SOAP APIs", "eBonding", "HTML / CSS", "SQL"]
+    },
+    {
+      "category": "Tooling & Practice",
+      "icon": "wrench",
+      "items": ["ServiceNow SDK", "Postman", "SoapUI", "GitHub", "Slack Spoke", "Agile / Scrum", "UAT & QA", "ITIL practices"]
+    }
+  ],
+
+  "certifications": [
+    { "name": "Certified System Administrator", "abbr": "CSA", "issuer": "ServiceNow", "year": "", "credentialUrl": "" },
+    { "name": "Certified Application Developer", "abbr": "CAD", "issuer": "ServiceNow", "year": "", "credentialUrl": "" },
+    { "name": "Certified Implementation Specialist — HRSD", "abbr": "CIS-HRSD", "issuer": "ServiceNow", "year": "", "credentialUrl": "" }
+  ],
+
+  "education": [
+    {
+      "degree": "B.E. Computer Science",
+      "institution": "Sri Chandrasekharendra Saraswathi Viswa Mahavidyalaya",
+      "startYear": "2018",
+      "endYear": "2022",
+      "detail": "CGPA 9.47 / 10"
+    }
+  ]
+}

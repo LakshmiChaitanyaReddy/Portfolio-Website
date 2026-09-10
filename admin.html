@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Content admin | Portfolio</title>
+<meta name="description" content="Private editing UI for the portfolio content file.">
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ══════════════════════════════════════════════════════════════════════
+   THEME TOKENS — identical to index.html. Re-theme both files by pasting
+   the same :root and [data-theme="light"] blocks into each.
+   ══════════════════════════════════════════════════════════════════════ */
+:root {
+  --accent:        #5cc8a8;                    /* primary accent          */
+  --accent-strong: #7fe0c2;                    /* hover / brighter state  */
+  --accent-soft:   rgba(92, 200, 168, 0.12);   /* tinted backgrounds      */
+  --on-accent:     #06120e;                    /* text ON a filled accent */
+
+  --danger:        #ff6b6b;                    /* errors, destructive     */
+  --warn:          #e3b341;                    /* conflicts, cautions     */
+
+  --bg:        #0d1117;                        /* page background         */
+  --bg-alt:    #10161f;                        /* alternating band        */
+  --surface:   #151c26;                        /* cards, panels           */
+  --surface-2: #1b2430;                        /* chips, inputs, headers  */
+
+  --text:      #e8edf4;                        /* headings, primary copy  */
+  --text-mid:  #b3bdcb;                        /* body copy               */
+  --text-dim:  #7d8899;                        /* labels, meta            */
+
+  --border:    #232d3b;
+  --border-2:  #303d4e;                        /* hover / focus borders   */
+  --shadow:    0 1px 2px rgba(0,0,0,.4), 0 12px 32px rgba(0,0,0,.35);
+  --header-bg: rgba(13, 17, 23, 0.78);
+
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-body:    "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+
+  --maxw:      1180px;                          /* wider than the site    */
+  --radius:    14px;
+  --radius-sm: 8px;
+  --gutter:    clamp(1rem, 4vw, 2.5rem);
+  --gap:       1.1rem;
+  --nav-h:     68px;
+
+  --ease:  cubic-bezier(.22,.61,.36,1);
+  --speed: .35s;
+}
+
+[data-theme="light"] {
+  --accent:        #0f8a6a;
+  --accent-strong: #0b6e54;
+  --accent-soft:   rgba(15, 138, 106, 0.10);
+  --on-accent:     #ffffff;
+
+  --danger:        #c62828;
+  --warn:          #8a6100;
+
+  --bg:        #fbfbf9;
+  --bg-alt:    #f3f4f1;
+  --surface:   #ffffff;
+  --surface-2: #f1f3f0;
+
+  --text:      #14181d;
+  --text-mid:  #414a55;
+  --text-dim:  #6b7480;
+
+  --border:    #e2e4e0;
+  --border-2:  #c9cdc7;
+  --shadow:    0 1px 2px rgba(20,24,29,.05), 0 12px 28px rgba(20,24,29,.07);
+  --header-bg: rgba(251, 251, 249, 0.82);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text-mid);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color var(--speed) var(--ease), color var(--speed) var(--ease);
+}
+
+h1, h2, h3 { font-family: var(--font-display); color: var(--text); line-height: 1.2; margin: 0; letter-spacing: -0.02em; }
+h1 { font-size: 1.65rem; }
+h2 { font-size: 1.2rem; }
+h3 { font-size: .95rem; }
+p { margin: 0 0 1rem; }
+ul { margin: 0; padding: 0; list-style: none; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-strong); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+code { font-family: var(--font-mono); font-size: .85em; background: var(--surface-2); padding: .1rem .35rem; border-radius: 4px; color: var(--text); }
+
+.container { width: 100%; max-width: var(--maxw); margin-inline: auto; padding-inline: var(--gutter); }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* ── Header ─────────────────────────────────────────────────────────── */
+.site-header {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--header-bg); border-bottom: 1px solid var(--border);
+  backdrop-filter: saturate(160%) blur(12px); -webkit-backdrop-filter: saturate(160%) blur(12px);
+}
+.nav { display: flex; align-items: center; justify-content: space-between; gap: 1rem; height: var(--nav-h); }
+.brand { font-family: var(--font-mono); font-size: .95rem; color: var(--text); white-space: nowrap; }
+.brand .dot { color: var(--accent); }
+.brand .tool { color: var(--text-dim); }
+.nav-actions { display: flex; align-items: center; gap: .5rem; }
+
+.icon-btn {
+  display: inline-grid; place-items: center; width: 38px; height: 38px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: transparent; color: var(--text-mid); cursor: pointer; font-size: 1rem;
+  transition: border-color .2s var(--ease), color .2s var(--ease), background-color .2s var(--ease);
+}
+.icon-btn:hover { color: var(--text); border-color: var(--border-2); background: var(--surface-2); }
+[data-theme="dark"]  .i-sun  { display: inline; }
+[data-theme="dark"]  .i-moon { display: none; }
+[data-theme="light"] .i-sun  { display: none; }
+[data-theme="light"] .i-moon { display: inline; }
+
+/* ── Buttons ────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  padding: .62rem 1.05rem; border-radius: var(--radius-sm); border: 1px solid transparent;
+  font-family: var(--font-body); font-size: .875rem; font-weight: 600; cursor: pointer;
+  transition: transform .15s var(--ease), background-color .2s var(--ease), border-color .2s var(--ease), color .2s var(--ease);
+}
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-primary { background: var(--accent); color: var(--on-accent); }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); }
+.btn-ghost { background: transparent; border-color: var(--border-2); color: var(--text); }
+.btn-ghost:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.btn-sm { padding: .4rem .7rem; font-size: .8rem; }
+.btn-block { width: 100%; }
+
+.tool-btn {
+  width: 30px; height: 30px; display: inline-grid; place-items: center;
+  border: 1px solid var(--border); border-radius: 6px; background: var(--bg);
+  color: var(--text-dim); cursor: pointer; font-size: .85rem; line-height: 1;
+  transition: color .2s var(--ease), border-color .2s var(--ease);
+}
+.tool-btn:hover:not(:disabled) { color: var(--text); border-color: var(--border-2); }
+.tool-btn:disabled { opacity: .3; cursor: not-allowed; }
+.tool-btn.danger:hover:not(:disabled) { color: var(--danger); border-color: var(--danger); }
+.drag-handle { cursor: grab; }
+.drag-handle:active { cursor: grabbing; }
+
+/* ── Connect screen ─────────────────────────────────────────────────── */
+.connect { padding: clamp(2.5rem, 8vw, 5rem) 0; }
+.connect-card {
+  max-width: 560px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface); padding: clamp(1.5rem, 4vw, 2.2rem);
+}
+.connect-card h1 { margin-bottom: .4rem; }
+.connect-card > p { color: var(--text-dim); font-size: .92rem; }
+.eyebrow {
+  display: inline-flex; align-items: center; gap: .55rem;
+  font-family: var(--font-mono); font-size: .76rem; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: .8rem;
+}
+.eyebrow::before { content: ""; width: 22px; height: 1px; background: var(--accent); opacity: .6; }
+
+/* ── Fields ─────────────────────────────────────────────────────────── */
+.field { display: grid; gap: .3rem; margin-bottom: .9rem; }
+.field > label, .sub-label {
+  font-family: var(--font-mono); font-size: .72rem; text-transform: uppercase;
+  letter-spacing: .07em; color: var(--text-dim);
+}
+.field .hint { font-size: .75rem; color: var(--text-dim); }
+.field input[type="text"], .field input[type="password"], .field input[type="month"], .field textarea, .field select {
+  width: 100%; padding: .55rem .7rem;
+  background: var(--bg); color: var(--text);
+  border: 1px solid var(--border); border-radius: 6px;
+  font-family: var(--font-body); font-size: .9rem; line-height: 1.55;
+  transition: border-color .2s var(--ease);
+}
+.field input:focus, .field textarea:focus, .field select:focus { border-color: var(--accent); outline: none; }
+.field textarea { resize: vertical; min-height: 4.5rem; }
+.field.mono input { font-family: var(--font-mono); font-size: .82rem; }
+.field-inline { display: flex; align-items: center; gap: .55rem; margin-bottom: .9rem; }
+.field-inline label { font-family: var(--font-mono); font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; color: var(--text-dim); }
+.field-inline input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); }
+.field-grid { display: grid; gap: 0 .9rem; }
+@media (min-width: 620px) { .field-grid.cols-2 { grid-template-columns: 1fr 1fr; } .field-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; } }
+
+/* ── Tag input ──────────────────────────────────────────────────────── */
+.tag-box {
+  display: flex; flex-wrap: wrap; gap: .35rem; align-items: center;
+  padding: .4rem .45rem; background: var(--bg);
+  border: 1px solid var(--border); border-radius: 6px;
+}
+.tag-box:focus-within { border-color: var(--accent); }
+.tag {
+  display: inline-flex; align-items: center; gap: .35rem;
+  font-family: var(--font-mono); font-size: .76rem;
+  padding: .22rem .3rem .22rem .5rem; border-radius: 5px;
+  background: var(--surface-2); border: 1px solid var(--border); color: var(--text-mid);
+}
+.tag button {
+  border: 0; background: none; color: var(--text-dim); cursor: pointer;
+  font-size: .9rem; line-height: 1; padding: 0 .1rem; border-radius: 3px;
+}
+.tag button:hover { color: var(--danger); }
+.tag-box input {
+  flex: 1; min-width: 9rem; border: 0; background: none; color: var(--text);
+  font-family: var(--font-body); font-size: .85rem; padding: .2rem .25rem;
+}
+.tag-box input:focus { outline: none; }
+
+/* ── Repo bar ───────────────────────────────────────────────────────── */
+.repo-bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .6rem 1rem;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface); padding: .7rem .9rem; margin: 1.5rem 0 1.25rem;
+  font-family: var(--font-mono); font-size: .78rem; color: var(--text-dim);
+}
+.repo-bar .repo-path { color: var(--text); }
+.repo-bar .spacer { flex: 1; }
+.dirty-dot { display: inline-flex; align-items: center; gap: .4rem; color: var(--warn); }
+.dirty-dot::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--warn); }
+.clean-dot { display: inline-flex; align-items: center; gap: .4rem; color: var(--accent); }
+.clean-dot::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+
+/* ── Tabs ───────────────────────────────────────────────────────────── */
+.tabs {
+  display: flex; flex-wrap: wrap; gap: .3rem;
+  border-bottom: 1px solid var(--border); padding-bottom: .6rem; margin-bottom: 1.5rem;
+}
+.tab {
+  display: inline-flex; align-items: center; gap: .45rem;
+  padding: .45rem .8rem; border-radius: var(--radius-sm);
+  border: 1px solid transparent; background: transparent;
+  font-family: var(--font-body); font-size: .875rem; font-weight: 500;
+  color: var(--text-dim); cursor: pointer;
+  transition: color .2s var(--ease), background-color .2s var(--ease), border-color .2s var(--ease);
+}
+.tab:hover { color: var(--text); background: var(--surface-2); }
+.tab[aria-selected="true"] { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+.tab .count { font-family: var(--font-mono); font-size: .7rem; opacity: .75; }
+
+/* ── Item cards ─────────────────────────────────────────────────────── */
+.item-list { display: grid; gap: .75rem; margin-bottom: 1rem; }
+.item-card { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
+.item-card.is-dragging { opacity: .45; border-color: var(--accent); }
+.item-card.drop-target { border-color: var(--accent); }
+.item-head {
+  display: flex; align-items: center; gap: .5rem;
+  padding: .6rem .8rem; background: var(--surface-2); border-bottom: 1px solid var(--border);
+}
+.item-idx { font-family: var(--font-mono); font-size: .72rem; color: var(--accent); }
+.item-title { flex: 1; min-width: 0; font-size: .9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.item-tools { display: flex; gap: .3rem; flex: none; }
+.item-body { padding: 1rem .95rem .35rem; }
+.item-card.nested { background: var(--bg-alt); }
+.item-card.nested .item-body { padding-bottom: .35rem; }
+
+.empty {
+  border: 1px dashed var(--border-2); border-radius: var(--radius);
+  padding: 1.1rem; text-align: center; font-size: .85rem; color: var(--text-dim); margin: 0 0 1rem;
+}
+.section-doc { font-size: .85rem; color: var(--text-dim); margin: -.4rem 0 1.1rem; max-width: 70ch; }
+
+/* ── Save bar ───────────────────────────────────────────────────────── */
+.save-bar {
+  position: sticky; bottom: 0; z-index: 50;
+  display: grid; gap: .7rem;
+  border: 1px solid var(--border); border-radius: var(--radius) var(--radius) 0 0;
+  background: var(--header-bg); backdrop-filter: saturate(160%) blur(12px);
+  -webkit-backdrop-filter: saturate(160%) blur(12px);
+  padding: .9rem 1rem; margin-top: 2rem;
+}
+@media (min-width: 780px) { .save-bar { grid-template-columns: 1fr auto auto; align-items: center; } }
+.save-bar .field { margin: 0; }
+.save-msg { font-size: .85rem; margin: 0; }
+.save-msg.ok { color: var(--accent); }
+.save-msg.err { color: var(--danger); }
+.save-msg.warn { color: var(--warn); }
+
+/* ── Validation panel ───────────────────────────────────────────────── */
+.problems {
+  border: 1px solid var(--border); border-left: 3px solid var(--danger);
+  border-radius: var(--radius); background: var(--surface);
+  padding: 1rem 1.15rem; margin-bottom: 1.25rem;
+}
+.problems h2 { font-size: 1rem; margin-bottom: .5rem; color: var(--danger); }
+.problems ul { display: grid; gap: .4rem; }
+.problems li { font-size: .86rem; display: flex; flex-wrap: wrap; gap: .5rem; align-items: baseline; }
+.problems .where { font-family: var(--font-mono); font-size: .72rem; color: var(--text-dim); }
+.problems button {
+  border: 0; background: none; color: var(--accent); cursor: pointer;
+  font-family: var(--font-body); font-size: .8rem; text-decoration: underline; padding: 0;
+}
+
+.notice {
+  border-left: 2px solid var(--accent); background: var(--accent-soft);
+  padding: .7rem .9rem; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: .85rem; color: var(--text-mid); margin-bottom: 1.25rem;
+}
+.notice.warn { border-left-color: var(--warn); background: rgba(227, 179, 65, .1); }
+.notice.err  { border-left-color: var(--danger); background: rgba(255, 107, 107, .1); }
+
+/* ── Preview ────────────────────────────────────────────────────────── */
+.preview-bar { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin-bottom: .9rem; }
+.preview-frame {
+  width: 100%; height: min(72vh, 780px);
+  border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg);
+}
+
+main { padding-bottom: 3rem; }
+.panel-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .6rem; margin-bottom: .5rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
+</style>
+</head>
+
+<body>
+<header class="site-header">
+  <div class="container">
+    <nav class="nav" aria-label="Admin">
+      <a class="brand" href="index.html">portfolio<span class="dot">.</span>dev <span class="tool">/ content admin</span></a>
+      <div class="nav-actions">
+        <a class="btn btn-ghost btn-sm" href="index.html">← View site</a>
+        <button class="btn btn-ghost btn-sm" id="disconnect-btn" type="button" hidden>Disconnect</button>
+        <button class="icon-btn" id="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="false">
+          <span class="i-sun" aria-hidden="true">☀</span><span class="i-moon" aria-hidden="true">☾</span>
+        </button>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- ═══════════════ CONNECT ═══════════════ -->
+  <section class="connect" id="connect-view" aria-labelledby="connect-title">
+    <div class="connect-card">
+      <p class="eyebrow">Connect</p>
+      <h1 id="connect-title">Edit your portfolio content</h1>
+      <p>
+        This page reads <code>data.json</code> straight from your repository, lets you
+        edit it, and commits it back. The token lives in a JavaScript variable for this
+        tab only — it is never stored, never put in the URL, and never committed.
+      </p>
+
+      <div class="notice err" id="insecure-warning" hidden>
+        This page is being served over plain HTTP. Don't paste a token here — open it over
+        HTTPS (GitHub Pages) or on localhost instead.
+      </div>
+
+      <form id="connect-form" autocomplete="off">
+        <div class="field-grid cols-2">
+          <div class="field">
+            <label for="in-owner">GitHub username</label>
+            <input type="text" id="in-owner" name="owner" required autocapitalize="off" spellcheck="false" placeholder="your-username">
+          </div>
+          <div class="field">
+            <label for="in-repo">Repository</label>
+            <input type="text" id="in-repo" name="repo" required autocapitalize="off" spellcheck="false" placeholder="your-username.github.io">
+          </div>
+          <div class="field">
+            <label for="in-branch">Branch</label>
+            <input type="text" id="in-branch" name="branch" value="main" required autocapitalize="off" spellcheck="false">
+          </div>
+          <div class="field">
+            <label for="in-path">File path</label>
+            <input type="text" id="in-path" name="path" value="data.json" required autocapitalize="off" spellcheck="false">
+          </div>
+        </div>
+        <div class="field mono">
+          <label for="in-token">Fine-grained personal access token</label>
+          <input type="password" id="in-token" name="token" required autocomplete="off" spellcheck="false"
+                 placeholder="github_pat_…" aria-describedby="token-hint">
+          <span class="hint" id="token-hint">
+            Needs exactly one permission on this repository: <strong>Contents: Read and write</strong>.
+            See SETUP.md.
+          </span>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit" id="connect-btn">Connect to repository</button>
+        <p class="save-msg" id="connect-msg" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- ═══════════════ EDITOR ═══════════════ -->
+  <div id="editor-view" hidden>
+    <div class="repo-bar">
+      <span class="repo-path" id="repo-label"></span>
+      <span id="sha-label"></span>
+      <span class="spacer"></span>
+      <span id="dirty-label" class="clean-dot">Saved</span>
+      <button class="btn btn-ghost btn-sm" id="reload-btn" type="button">Reload from GitHub</button>
+    </div>
+
+    <div class="tabs" role="tablist" id="tablist" aria-label="Content sections"></div>
+    <div id="panels"></div>
+
+    <div class="save-bar">
+      <div class="field">
+        <label for="commit-msg" class="visually-hidden">Commit message</label>
+        <input type="text" id="commit-msg" value="Update portfolio content" aria-label="Commit message">
+      </div>
+      <button class="btn btn-ghost" id="download-btn" type="button">Download data.json</button>
+      <button class="btn btn-primary" id="save-btn" type="button">Save to GitHub</button>
+      <p class="save-msg" id="save-msg" role="status" aria-live="polite" style="grid-column:1/-1"></p>
+    </div>
+  </div>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ====================================================================
+     STATE
+     TOKEN is a plain variable: it dies with the tab. Nothing here ever
+     touches localStorage, sessionStorage, cookies or the URL.
+     ==================================================================== */
+  let TOKEN = null;
+  let repo = { owner: "", name: "", branch: "main", path: "data.json" };
+  let sha = null;
+  let data = emptyData();
+  let savedSnapshot = "";
+  let activeTab = "profile";
+  let previewReady = false;
+
+  const API = "https://api.github.com";
+
+  function emptyData() {
+    return { profile: {}, experience: [], projects: [], skills: [], certifications: [], education: [] };
+  }
+
+  function normalise(raw) {
+    const d = raw && typeof raw === "object" ? raw : {};
+    return {
+      profile: d.profile && typeof d.profile === "object" && !Array.isArray(d.profile) ? d.profile : {},
+      experience: Array.isArray(d.experience) ? d.experience : [],
+      projects: Array.isArray(d.projects) ? d.projects : [],
+      skills: Array.isArray(d.skills) ? d.skills : [],
+      certifications: Array.isArray(d.certifications) ? d.certifications : [],
+      education: Array.isArray(d.education) ? d.education : []
+    };
+  }
+
+  const serialise = () => JSON.stringify(data, null, 2) + "\n";
+  const isDirty = () => serialise() !== savedSnapshot;
+
+  /* ====================================================================
+     SCHEMA — drives the tabs, the forms and the validator.
+     types: text | textarea | lines | tags | bool | month | year | objectList
+     ==================================================================== */
+  const LINK_FIELDS = [
+    { key: "label", label: "Label" },
+    { key: "url", label: "URL" },
+    { key: "icon", label: "Icon", hint: "Lucide icon name" }
+  ];
+
+  const SCHEMA = [
+    {
+      key: "profile", label: "Profile", kind: "object",
+      doc: "Feeds the hero, the about copy, the contact footer, the page title, the meta/Open Graph tags and the schema.org Person block.",
+      fields: [
+        { key: "name", label: "Full name", required: true },
+        { key: "shortName", label: "Short name", hint: "Nav brand and page title" },
+        { key: "title", label: "Job title" },
+        { key: "tagline", label: "Tagline", type: "textarea", hint: "{{years}} is replaced with computed experience" },
+        { key: "status", label: "Hero pill", hint: "Blank hides the pill" },
+        { key: "location", label: "Location", hint: "City, Country" },
+        { key: "email", label: "Email", check: "email" },
+        { key: "phone", label: "Phone" },
+        { key: "resumeUrl", label: "Resume URL" },
+        { key: "siteUrl", label: "Site URL", hint: "Canonical + Open Graph" },
+        { key: "ogImage", label: "OG image", hint: "Relative to siteUrl" },
+        { key: "about", label: "About paragraphs", type: "lines", hint: "One paragraph per line" },
+        { key: "links", label: "Links", type: "objectList", itemLabel: "link", fields: LINK_FIELDS }
+      ]
+    },
+    {
+      key: "experience", label: "Experience", kind: "list", itemLabel: "role", idPrefix: "exp",
+      doc: "The site sorts these by start date, newest first — the order here only matters for ties.",
+      title: (it) => [it.role, it.company].filter(Boolean).join(" · ") || "New role",
+      fields: [
+        { key: "id", label: "ID", required: true, unique: true, mono: true, hint: "Stable identifier — must be unique" },
+        { key: "company", label: "Company", required: true },
+        { key: "role", label: "Role", required: true },
+        { key: "startDate", label: "Start", type: "month", required: true, hint: "YYYY-MM" },
+        { key: "endDate", label: "End", type: "month", nullWhenEmpty: true, hint: "Blank = Present" },
+        { key: "location", label: "Location" },
+        { key: "summary", label: "Summary", type: "textarea" },
+        { key: "highlights", label: "Highlights", type: "lines", hint: "One bullet per line · **text** renders bold" },
+        { key: "tech", label: "Tech", type: "tags" }
+      ]
+    },
+    {
+      key: "projects", label: "Projects", kind: "list", itemLabel: "project", idPrefix: "proj",
+      doc: "Featured projects render first and double-width. The filter buttons on the site are the union of every tech tag here.",
+      title: (it) => it.title || "New project",
+      fields: [
+        { key: "id", label: "ID", required: true, unique: true, mono: true },
+        { key: "title", label: "Title", required: true },
+        { key: "featured", label: "Featured", type: "bool" },
+        { key: "blurb", label: "Blurb", type: "textarea" },
+        { key: "problem", label: "Problem", type: "textarea" },
+        { key: "approach", label: "Approach", type: "textarea" },
+        { key: "result", label: "Result", type: "textarea" },
+        { key: "tech", label: "Tech", type: "tags" },
+        { key: "links", label: "Links", type: "objectList", itemLabel: "link", fields: LINK_FIELDS }
+      ]
+    },
+    {
+      key: "skills", label: "Skills", kind: "list", itemLabel: "category",
+      doc: "One card per category, in this order. Nothing about the categories is hardcoded on the site.",
+      title: (it) => it.category || "New category",
+      fields: [
+        { key: "category", label: "Category", required: true },
+        { key: "icon", label: "Icon", hint: "Lucide icon name, e.g. code-2" },
+        { key: "items", label: "Items", type: "tags" }
+      ]
+    },
+    {
+      key: "certifications", label: "Certifications", kind: "list", itemLabel: "certification",
+      doc: "Empty this list and the section plus its nav link disappear from the site.",
+      title: (it) => it.name || "New certification",
+      fields: [
+        { key: "name", label: "Name", required: true },
+        { key: "abbr", label: "Short code", hint: "e.g. CSA" },
+        { key: "issuer", label: "Issuer" },
+        { key: "year", label: "Year", type: "year" },
+        { key: "credentialUrl", label: "Credential URL", hint: "Adds a Verify link" }
+      ]
+    },
+    {
+      key: "education", label: "Education", kind: "list", itemLabel: "qualification",
+      doc: "Sorted by start year, newest first.",
+      title: (it) => it.degree || it.institution || "New qualification",
+      fields: [
+        { key: "degree", label: "Degree", required: true },
+        { key: "institution", label: "Institution", required: true },
+        { key: "startYear", label: "Start year", type: "year", hint: "YYYY" },
+        { key: "endYear", label: "End year", type: "year", nullWhenEmpty: true, hint: "Blank = Present" },
+        { key: "detail", label: "Detail", hint: "e.g. CGPA 9.47 / 10" }
+      ]
+    }
+  ];
+
+  const TABS = SCHEMA.concat([{ key: "preview", label: "Preview", kind: "preview" }]);
+
+  /* ====================================================================
+     DOM HELPER
+     ==================================================================== */
+  function el(tag, attrs) {
+    const node = document.createElement(tag);
+    if (attrs) {
+      Object.keys(attrs).forEach(function (k) {
+        const v = attrs[k];
+        if (v == null || v === false) return;
+        if (k === "class") node.className = v;
+        else if (k === "text") node.textContent = v;
+        else if (k.slice(0, 2) === "on" && typeof v === "function") node.addEventListener(k.slice(2).toLowerCase(), v);
+        else node.setAttribute(k, v === true ? "" : v);
+      });
+    }
+    Array.prototype.slice.call(arguments, 2).forEach(function add(child) {
+      if (child == null || child === false || child === "") return;
+      if (Array.isArray(child)) return child.forEach(add);
+      node.appendChild(child.nodeType ? child : document.createTextNode(String(child)));
+    });
+    return node;
+  }
+  const clear = (n) => { while (n.firstChild) n.removeChild(n.firstChild); };
+  let uidN = 0;
+  const uid = () => "f" + (++uidN);
+
+  /* ====================================================================
+     BASE64 (UTF-8 safe both ways — the content has em dashes in it)
+     ==================================================================== */
+  function toBase64(str) {
+    const bytes = new TextEncoder().encode(str);
+    let bin = "";
+    for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin);
+  }
+  function fromBase64(b64) {
+    const bin = atob(String(b64).replace(/\s/g, ""));
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new TextDecoder().decode(bytes);
+  }
+
+  /* ====================================================================
+     GITHUB API
+     ==================================================================== */
+  function ghHeaders() {
+    return {
+      "Authorization": "Bearer " + TOKEN,
+      "Accept": "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28"
+    };
+  }
+  const contentsUrl = () =>
+    API + "/repos/" + encodeURIComponent(repo.owner) + "/" + encodeURIComponent(repo.name) +
+    "/contents/" + repo.path.split("/").map(encodeURIComponent).join("/");
+
+  function describeHttpError(status, body) {
+    const msg = (body && body.message) || "";
+    if (status === 401) return "401 — the token was rejected. Check you pasted it whole and that it hasn't expired.";
+    if (status === 403) return "403 — the token is valid but not allowed here. Give it Contents: Read and write on this repository. (" + msg + ")";
+    if (status === 404) return "404 — no such repo, branch or file for this token. Check owner/repo/branch/path, and that the token can see this repository.";
+    if (status === 409) return "409 — the file changed on GitHub since you loaded it.";
+    if (status === 422) return "422 — GitHub rejected the write. " + msg;
+    return status + " — " + (msg || "unexpected response from GitHub.");
+  }
+
+  function ghFetch(url, options) {
+    return fetch(url, options).then(function (res) {
+      return res.text().then(function (body) {
+        let json = null;
+        try { json = body ? JSON.parse(body) : null; } catch (e) { /* non-JSON error page */ }
+        return { ok: res.ok, status: res.status, json: json, raw: body };
+      });
+    });
+  }
+
+  function fetchFile() {
+    const url = contentsUrl() + "?ref=" + encodeURIComponent(repo.branch) + "&t=" + Date.now();
+    return ghFetch(url, { headers: ghHeaders(), cache: "no-store" }).then(function (res) {
+      if (!res.ok) throw new Error(describeHttpError(res.status, res.json));
+      if (!res.json || typeof res.json.content !== "string" || res.json.content === "") {
+        throw new Error("GitHub returned no file content — is " + repo.path + " a file (not a folder), and under 1 MB?");
+      }
+      let parsed;
+      try { parsed = JSON.parse(fromBase64(res.json.content)); }
+      catch (e) { throw new Error(repo.path + " is not valid JSON — " + e.message); }
+      return { data: normalise(parsed), sha: res.json.sha };
+    });
+  }
+
+  function putFile(message, contentString, currentSha) {
+    return ghFetch(contentsUrl(), {
+      method: "PUT",
+      headers: Object.assign({ "Content-Type": "application/json" }, ghHeaders()),
+      body: JSON.stringify({
+        message: message,
+        content: toBase64(contentString),
+        sha: currentSha,
+        branch: repo.branch
+      })
+    });
+  }
+
+  /* ====================================================================
+     FIELD CONTROLS
+     ==================================================================== */
+  function readValue(obj, f) {
+    const v = obj[f.key];
+    if (f.type === "lines" || f.type === "tags") return Array.isArray(v) ? v : [];
+    if (f.type === "bool") return v === true;
+    return v == null ? "" : String(v);
+  }
+
+  function writeValue(obj, f, raw) {
+    if (f.type === "lines") obj[f.key] = String(raw).split("\n").map((s) => s.trim()).filter(Boolean);
+    else if (f.type === "bool") obj[f.key] = raw === true;
+    else {
+      const s = String(raw).trim();
+      obj[f.key] = s === "" && f.nullWhenEmpty ? null : s;
+    }
+    touched();
+  }
+
+  function tagInput(obj, f) {
+    const box = el("div", { class: "tag-box" });
+    const input = el("input", {
+      type: "text", id: uid(),
+      placeholder: "Type and press Enter",
+      "aria-label": "Add to " + (f.label || f.key)
+    });
+
+    function draw() {
+      clear(box);
+      readValue(obj, f).forEach(function (tag, i) {
+        box.appendChild(el("span", { class: "tag" }, tag,
+          el("button", {
+            type: "button", "aria-label": "Remove " + tag, text: "×",
+            onclick: function () {
+              obj[f.key].splice(i, 1);
+              touched(); draw(); input.focus();
+            }
+          })
+        ));
+      });
+      box.appendChild(input);
+    }
+
+    function commit() {
+      const parts = input.value.split(",").map((s) => s.trim()).filter(Boolean);
+      if (!parts.length) return;
+      if (!Array.isArray(obj[f.key])) obj[f.key] = [];
+      parts.forEach(function (p) { if (obj[f.key].indexOf(p) === -1) obj[f.key].push(p); });
+      input.value = "";
+      touched(); draw(); input.focus();
+    }
+
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === ",") { e.preventDefault(); commit(); }
+      else if (e.key === "Backspace" && input.value === "" && (obj[f.key] || []).length) {
+        obj[f.key].pop(); touched(); draw(); input.focus();
+      }
+    });
+    input.addEventListener("blur", commit);
+
+    draw();
+    return el("div", { class: "field" },
+      el("label", { for: input.id, text: f.label || f.key }),
+      box,
+      f.hint && el("span", { class: "hint", text: f.hint })
+    );
+  }
+
+  function fieldRow(obj, f, onTitleChange) {
+    if (f.type === "tags") return tagInput(obj, f);
+
+    if (f.type === "objectList") {
+      if (!Array.isArray(obj[f.key])) obj[f.key] = [];
+      return el("div", { style: "margin-bottom:.9rem" },
+        el("p", { class: "sub-label", style: "margin:0 0 .4rem", text: f.label || f.key }),
+        listEditor(() => obj[f.key], {
+          fields: f.fields, itemLabel: f.itemLabel || "item", nested: true, noDrag: false,
+          title: (it) => it.label || it.url || ("New " + (f.itemLabel || "item"))
+        })
+      );
+    }
+
+    const id = uid();
+
+    if (f.type === "bool") {
+      const box = el("input", { type: "checkbox", id: id });
+      box.checked = readValue(obj, f) === true;
+      box.addEventListener("change", function () { writeValue(obj, f, box.checked); });
+      return el("div", { class: "field-inline" }, box, el("label", { for: id, text: f.label || f.key }));
+    }
+
+    const multiline = f.type === "textarea" || f.type === "lines";
+    let input;
+    if (multiline) {
+      input = el("textarea", { id: id, rows: f.type === "lines" ? 5 : 3 });
+      input.value = f.type === "lines" ? readValue(obj, f).join("\n") : readValue(obj, f);
+    } else if (f.type === "month") {
+      input = el("input", { type: "month", id: id, placeholder: "2026-05" });
+      input.value = readValue(obj, f);
+    } else {
+      input = el("input", { type: "text", id: id, placeholder: f.placeholder || null });
+      input.value = readValue(obj, f);
+    }
+
+    input.addEventListener("input", function () {
+      writeValue(obj, f, input.value);
+      if (onTitleChange) onTitleChange();
+    });
+
+    return el("div", { class: "field" + (f.mono ? " mono" : "") },
+      el("label", { for: id, text: f.label || f.key + (f.required ? " *" : "") }),
+      input,
+      f.hint && el("span", { class: "hint", text: f.hint })
+    );
+  }
+
+  /* Group short fields two-up so the forms don't become one long column */
+  function fieldGroups(item, fields, retitle) {
+    const out = [];
+    let bucket = [];
+    const flush = function () {
+      if (!bucket.length) return;
+      out.push(el("div", { class: "field-grid cols-2" }, bucket));
+      bucket = [];
+    };
+    fields.forEach(function (f) {
+      const wide = f.type === "textarea" || f.type === "lines" || f.type === "tags" || f.type === "objectList";
+      if (wide) { flush(); out.push(fieldRow(item, f, retitle)); }
+      else bucket.push(fieldRow(item, f, retitle));
+    });
+    flush();
+    return out;
+  }
+
+  /* ====================================================================
+     LIST EDITOR — add / delete / drag-to-reorder (+ keyboard ↑ ↓)
+     ==================================================================== */
+  function blankItem(spec) {
+    const item = {};
+    spec.fields.forEach(function (f) {
+      if (f.type === "lines" || f.type === "tags" || f.type === "objectList") item[f.key] = [];
+      else if (f.type !== "bool") item[f.key] = "";
+    });
+    if (spec.idPrefix && "id" in item) item.id = makeId(spec);
+    return item;
+  }
+
+  function makeId(spec) {
+    const list = spec.getList ? spec.getList() : [];
+    const used = {};
+    list.forEach((it) => { if (it && it.id) used[it.id] = true; });
+    let n = list.length + 1;
+    let candidate = spec.idPrefix + "-" + n;
+    while (used[candidate]) { n++; candidate = spec.idPrefix + "-" + n; }
+    return candidate;
+  }
+
+  function toolBtn(glyph, label, disabled, onClick, extraClass) {
+    return el("button", {
+      type: "button", class: "tool-btn" + (extraClass ? " " + extraClass : ""),
+      title: label, "aria-label": label, disabled: disabled || null,
+      onclick: onClick, text: glyph
+    });
+  }
+
+  function listEditor(getList, spec) {
+    spec.getList = getList;
+    const host = el("div", { class: "item-list" });
+    const wrapper = el("div", null, host);
+    let dragIndex = null;
+
+    function reorderFromDom() {
+      const order = Array.prototype.slice.call(host.querySelectorAll(":scope > .item-card"))
+        .map((n) => +n.dataset.index);
+      const list = getList();
+      const next = order.map((i) => list[i]);
+      list.length = 0;
+      next.forEach((it) => list.push(it));
+      touched();
+      build();
+    }
+
+    function build(focusIndex) {
+      const list = getList();
+      clear(host);
+
+      if (!list.length) {
+        host.appendChild(el("p", { class: "empty", text: "No " + spec.itemLabel + "s yet." }));
+      }
+
+      list.forEach(function (item, i) {
+        const titleEl = el("h3", { class: "item-title", text: spec.title ? spec.title(item) : spec.itemLabel + " " + (i + 1) });
+        const retitle = spec.title ? function () { titleEl.textContent = spec.title(item); } : null;
+
+        const card = el("article", { class: "item-card" + (spec.nested ? " nested" : ""), "data-index": i });
+
+        const handle = toolBtn("⠿", "Drag to reorder " + (spec.title ? spec.title(item) : spec.itemLabel), false, null, "drag-handle");
+        // Dragging is armed only while the handle is held, so text selection
+        // inside the inputs keeps working normally. Every listener is scoped to
+        // the card — nothing accumulates on document across rebuilds.
+        handle.addEventListener("mousedown", function () { card.draggable = true; });
+        handle.addEventListener("touchstart", function () { card.draggable = true; }, { passive: true });
+        handle.addEventListener("mouseup", function () { card.draggable = false; });
+        card.addEventListener("mousedown", function (e) {
+          if (!e.target.closest(".drag-handle")) card.draggable = false;
+        });
+
+        card.addEventListener("dragstart", function (e) {
+          dragIndex = i;
+          card.classList.add("is-dragging");
+          if (e.dataTransfer) { e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", String(i)); }
+        });
+        card.addEventListener("dragend", function () {
+          card.classList.remove("is-dragging");
+          card.draggable = false;
+          Array.prototype.forEach.call(host.children, (c) => c.classList && c.classList.remove("drop-target"));
+          if (dragIndex !== null) { dragIndex = null; reorderFromDom(); }
+        });
+        card.addEventListener("dragover", function (e) {
+          if (dragIndex === null) return;
+          e.preventDefault();
+          const dragged = host.querySelector(".is-dragging");
+          if (!dragged || dragged === card) return;
+          const box = card.getBoundingClientRect();
+          const after = (e.clientY - box.top) > box.height / 2;
+          host.insertBefore(dragged, after ? card.nextSibling : card);
+        });
+
+        card.appendChild(el("header", { class: "item-head" },
+          handle,
+          el("span", { class: "item-idx", text: String(i + 1).padStart(2, "0") }),
+          titleEl,
+          el("div", { class: "item-tools" },
+            toolBtn("↑", "Move up", i === 0, function () { swap(list, i, i - 1); touched(); build(i - 1); }),
+            toolBtn("↓", "Move down", i === list.length - 1, function () { swap(list, i, i + 1); touched(); build(i + 1); }),
+            toolBtn("✕", "Delete", false, function () {
+              if (!window.confirm("Delete this entry? It's removed from the editor — nothing is committed until you save.")) return;
+              list.splice(i, 1); touched(); build();
+            }, "danger")
+          )
+        ));
+        card.appendChild(el("div", { class: "item-body" }, fieldGroups(item, spec.fields, retitle)));
+        host.appendChild(card);
+      });
+
+      if (typeof focusIndex === "number") {
+        const cards = host.querySelectorAll(":scope > .item-card");
+        const card = cards[Math.max(0, Math.min(focusIndex, cards.length - 1))];
+        const first = card && card.querySelector("input, textarea");
+        if (first) first.focus();
+      }
+      refreshCounts();
+    }
+
+    wrapper.appendChild(el("button", {
+      type: "button", class: "btn btn-ghost btn-block",
+      text: "+ Add " + spec.itemLabel,
+      onclick: function () {
+        getList().push(blankItem(spec));
+        touched();
+        build(getList().length - 1);
+      }
+    }));
+
+    build();
+    return wrapper;
+  }
+
+  function swap(list, a, b) {
+    if (b < 0 || b >= list.length) return;
+    const t = list[a]; list[a] = list[b]; list[b] = t;
+  }
+
+  /* ====================================================================
+     VALIDATION — runs before every save
+     ==================================================================== */
+  const MONTH_RE = /^\d{4}-(0[1-9]|1[0-2])$/;
+  const YEAR_RE = /^\d{4}$/;
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  function validate() {
+    const problems = [];
+    const add = (tab, where, message) => problems.push({ tab: tab, where: where, message: message });
+
+    try { JSON.stringify(data); }
+    catch (e) { add("profile", "data", "The content can't be serialised to JSON: " + e.message); return problems; }
+
+    SCHEMA.forEach(function (group) {
+      if (group.kind === "object") {
+        group.fields.forEach(function (f) {
+          const v = data[group.key][f.key];
+          if (f.required && !String(v == null ? "" : v).trim()) add(group.key, group.label + " › " + f.label, "is required.");
+          if (f.check === "email" && String(v || "").trim() && !EMAIL_RE.test(String(v).trim()))
+            add(group.key, group.label + " › " + f.label, "doesn't look like an email address.");
+        });
+        return;
+      }
+
+      const seen = {};
+      data[group.key].forEach(function (item, i) {
+        const where = group.label + " #" + (i + 1);
+        group.fields.forEach(function (f) {
+          const v = item[f.key];
+          const s = v == null ? "" : String(v).trim();
+
+          if (f.required && !s) add(group.key, where + " › " + f.label, "is required.");
+          if (f.unique && s) {
+            if (seen[s]) add(group.key, where + " › " + f.label, '"' + s + '" is already used by entry #' + seen[s] + ". IDs must be unique.");
+            else seen[s] = i + 1;
+          }
+          if (f.type === "month" && s && !MONTH_RE.test(s))
+            add(group.key, where + " › " + f.label, '"' + s + '" must be YYYY-MM (e.g. 2026-05).');
+          if (f.type === "year" && s && !YEAR_RE.test(s))
+            add(group.key, where + " › " + f.label, '"' + s + '" must be a 4-digit year.');
+        });
+
+        if (group.key === "experience" && item.startDate && item.endDate &&
+            MONTH_RE.test(String(item.startDate)) && MONTH_RE.test(String(item.endDate)) &&
+            String(item.endDate) < String(item.startDate)) {
+          add(group.key, where, "ends before it starts.");
+        }
+      });
+    });
+
+    return problems;
+  }
+
+  function showProblems(problems) {
+    const host = document.getElementById("problems-host");
+    if (host) host.remove();
+    if (!problems.length) return;
+
+    const panel = el("div", { class: "problems", id: "problems-host", role: "alert", tabindex: "-1" },
+      el("h2", { text: problems.length === 1 ? "1 problem blocks the save" : problems.length + " problems block the save" }),
+      el("ul", null, problems.map((p) => el("li", null,
+        el("span", { class: "where", text: p.where }),
+        el("span", { text: p.message }),
+        el("button", { type: "button", text: "Go to " + p.tab, onclick: () => selectTab(p.tab) })
+      )))
+    );
+    document.getElementById("panels").before(panel);
+    panel.focus();
+  }
+
+  /* ====================================================================
+     TABS
+     ==================================================================== */
+  const tablist = document.getElementById("tablist");
+  const panels = document.getElementById("panels");
+  const panelNodes = {};
+
+  function buildTabs() {
+    clear(tablist); clear(panels);
+    Object.keys(panelNodes).forEach((k) => delete panelNodes[k]);
+
+    TABS.forEach(function (group) {
+      const tabId = "tab-" + group.key, panelId = "panel-" + group.key;
+
+      const tab = el("button", {
+        type: "button", class: "tab", id: tabId, role: "tab",
+        "aria-selected": String(group.key === activeTab),
+        "aria-controls": panelId,
+        tabindex: group.key === activeTab ? "0" : "-1",
+        onclick: () => selectTab(group.key)
+      }, group.label, group.kind === "list" && el("span", { class: "count", "data-count": group.key }));
+
+      tab.addEventListener("keydown", function (e) {
+        const keys = { ArrowRight: 1, ArrowLeft: -1, Home: "first", End: "last" };
+        if (!(e.key in keys)) return;
+        e.preventDefault();
+        const i = TABS.findIndex((t) => t.key === group.key);
+        let next;
+        if (keys[e.key] === "first") next = 0;
+        else if (keys[e.key] === "last") next = TABS.length - 1;
+        else next = (i + keys[e.key] + TABS.length) % TABS.length;
+        selectTab(TABS[next].key);
+        document.getElementById("tab-" + TABS[next].key).focus();
+      });
+
+      tablist.appendChild(tab);
+
+      const panel = el("section", {
+        id: panelId, role: "tabpanel", "aria-labelledby": tabId,
+        tabindex: "0", hidden: group.key !== activeTab
+      });
+      panelNodes[group.key] = panel;
+      panels.appendChild(panel);
+      buildPanel(group, panel);
+    });
+    refreshCounts();
+  }
+
+  function buildPanel(group, panel) {
+    clear(panel);
+
+    if (group.kind === "preview") {
+      const frame = el("iframe", {
+        class: "preview-frame", id: "preview-frame", title: "Live preview of the portfolio",
+        src: "index.html?preview=1"
+      });
+      panel.appendChild(el("div", { class: "panel-head" }, el("h2", { text: "Preview" })));
+      panel.appendChild(el("p", { class: "section-doc", text:
+        "The real site, rendered against your unsaved edits. Nothing here is committed." }));
+      panel.appendChild(el("div", { class: "preview-bar" },
+        el("button", { class: "btn btn-ghost btn-sm", type: "button", onclick: refreshPreview }, "Reload preview"),
+        el("span", { class: "hint", id: "preview-hint", style: "font-size:.78rem;color:var(--text-dim)" })
+      ));
+      panel.appendChild(frame);
+      previewReady = false;
+      return;
+    }
+
+    panel.appendChild(el("div", { class: "panel-head" }, el("h2", { text: group.label })));
+    if (group.doc) panel.appendChild(el("p", { class: "section-doc", text: group.doc }));
+
+    if (group.kind === "object") {
+      panel.appendChild(el("div", { class: "item-card" },
+        el("div", { class: "item-body" }, fieldGroups(data[group.key], group.fields, null))));
+    } else {
+      panel.appendChild(listEditor(() => data[group.key], {
+        fields: group.fields, itemLabel: group.itemLabel, title: group.title, idPrefix: group.idPrefix
+      }));
+    }
+  }
+
+  function selectTab(key) {
+    activeTab = key;
+    TABS.forEach(function (t) {
+      const tab = document.getElementById("tab-" + t.key);
+      const panel = panelNodes[t.key];
+      if (!tab || !panel) return;
+      const on = t.key === key;
+      tab.setAttribute("aria-selected", String(on));
+      tab.tabIndex = on ? 0 : -1;
+      panel.hidden = !on;
+    });
+    if (key === "preview") sendPreview();
+  }
+
+  function refreshCounts() {
+    SCHEMA.forEach(function (g) {
+      if (g.kind !== "list") return;
+      const node = tablist.querySelector('[data-count="' + g.key + '"]');
+      if (node) node.textContent = String(data[g.key].length);
+    });
+  }
+
+  /* ====================================================================
+     PREVIEW — postMessage the working copy into the iframe
+     ==================================================================== */
+  window.addEventListener("message", function (e) {
+    const frame = document.getElementById("preview-frame");
+    if (!frame || e.source !== frame.contentWindow) return;
+    if (!e.data || e.data.type !== "portfolio:preview-ready") return;
+    previewReady = true;
+    sendPreview();
+  });
+
+  function sendPreview() {
+    const frame = document.getElementById("preview-frame");
+    const hint = document.getElementById("preview-hint");
+    if (!frame || !frame.contentWindow) return;
+    if (!previewReady) { if (hint) hint.textContent = "Loading preview…"; return; }
+    frame.contentWindow.postMessage({ type: "portfolio:data", data: JSON.parse(serialise()) }, "*");
+    if (hint) hint.textContent = "Showing your unsaved edits.";
+  }
+
+  function refreshPreview() {
+    const frame = document.getElementById("preview-frame");
+    if (!frame) return;
+    previewReady = false;
+    frame.src = "index.html?preview=1";
+  }
+
+  /* ====================================================================
+     DIRTY TRACKING
+     ==================================================================== */
+  function touched() {
+    updateDirty();
+    if (activeTab === "preview") sendPreview();
+  }
+
+  function updateDirty() {
+    const label = document.getElementById("dirty-label");
+    if (!label) return;
+    const dirty = isDirty();
+    label.className = dirty ? "dirty-dot" : "clean-dot";
+    label.textContent = dirty ? "Unsaved changes" : "Saved";
+  }
+
+  window.addEventListener("beforeunload", function (e) {
+    if (!TOKEN || !isDirty()) return;
+    e.preventDefault();
+    e.returnValue = "";
+    return "";
+  });
+
+  /* ====================================================================
+     CONNECT / RELOAD / SAVE
+     ==================================================================== */
+  const connectView = document.getElementById("connect-view");
+  const editorView = document.getElementById("editor-view");
+  const connectMsg = document.getElementById("connect-msg");
+  const saveMsg = document.getElementById("save-msg");
+
+  function setMsg(node, text, kind) {
+    node.textContent = text;
+    node.className = "save-msg" + (kind ? " " + kind : "");
+  }
+
+  document.getElementById("connect-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const tokenInput = document.getElementById("in-token");
+    repo = {
+      owner: document.getElementById("in-owner").value.trim(),
+      name: document.getElementById("in-repo").value.trim(),
+      branch: document.getElementById("in-branch").value.trim() || "main",
+      path: document.getElementById("in-path").value.trim().replace(/^\/+/, "") || "data.json"
+    };
+    TOKEN = tokenInput.value.trim();
+    if (!TOKEN) { setMsg(connectMsg, "Paste a token first.", "err"); return; }
+    if (!repo.owner || !repo.name) { setMsg(connectMsg, "Username and repository are both required.", "err"); return; }
+
+    const btn = document.getElementById("connect-btn");
+    btn.disabled = true;
+    setMsg(connectMsg, "Connecting…");
+
+    fetchFile().then(function (res) {
+      // The token stays in the TOKEN variable only — clear the input.
+      tokenInput.value = "";
+      data = res.data;
+      sha = res.sha;
+      savedSnapshot = serialise();
+
+      document.getElementById("repo-label").textContent =
+        repo.owner + "/" + repo.name + " @ " + repo.branch + " · " + repo.path;
+      document.getElementById("sha-label").textContent = "sha " + String(sha).slice(0, 7);
+
+      connectView.hidden = true;
+      editorView.hidden = false;
+      document.getElementById("disconnect-btn").hidden = false;
+      buildTabs();
+      selectTab("profile");
+      updateDirty();
+      setMsg(saveMsg, "Loaded " + repo.path + " from GitHub.", "ok");
+    }).catch(function (err) {
+      setMsg(connectMsg, String(err.message || err), "err");
+    }).then(function () { btn.disabled = false; });
+  });
+
+  document.getElementById("disconnect-btn").addEventListener("click", function () {
+    if (isDirty() && !window.confirm("You have unsaved changes. Disconnect and lose them?")) return;
+    TOKEN = null; sha = null; data = emptyData(); savedSnapshot = serialise();
+    editorView.hidden = true;
+    connectView.hidden = false;
+    document.getElementById("disconnect-btn").hidden = true;
+    setMsg(connectMsg, "Disconnected. The token has been discarded.", "ok");
+  });
+
+  document.getElementById("reload-btn").addEventListener("click", function () {
+    if (isDirty() && !window.confirm("Reloading discards your unsaved edits. Continue?")) return;
+    setMsg(saveMsg, "Reloading…");
+    fetchFile().then(function (res) {
+      data = res.data; sha = res.sha; savedSnapshot = serialise();
+      document.getElementById("sha-label").textContent = "sha " + String(sha).slice(0, 7);
+      buildTabs(); selectTab(activeTab === "preview" ? "profile" : activeTab);
+      updateDirty();
+      setMsg(saveMsg, "Reloaded from GitHub.", "ok");
+    }).catch(function (err) { setMsg(saveMsg, String(err.message || err), "err"); });
+  });
+
+  document.getElementById("save-btn").addEventListener("click", function () {
+    const problems = validate();
+    showProblems(problems);
+    if (problems.length) {
+      setMsg(saveMsg, "Nothing was committed — fix the " + problems.length +
+        (problems.length === 1 ? " problem" : " problems") + " listed above.", "err");
+      return;
+    }
+
+    const btn = document.getElementById("save-btn");
+    const message = document.getElementById("commit-msg").value.trim() || "Update portfolio content";
+    const payload = serialise();
+
+    btn.disabled = true;
+    setMsg(saveMsg, "Committing to " + repo.owner + "/" + repo.name + "…");
+
+    putFile(message, payload, sha).then(function (res) {
+      if (res.ok) {
+        sha = (res.json && res.json.content && res.json.content.sha) || sha;
+        savedSnapshot = payload;
+        document.getElementById("sha-label").textContent = "sha " + String(sha).slice(0, 7);
+        updateDirty();
+        const url = res.json && res.json.commit && res.json.commit.html_url;
+        setMsg(saveMsg, "Committed. GitHub Pages usually redeploys within a minute.", "ok");
+        if (url) {
+          saveMsg.appendChild(document.createTextNode(" "));
+          saveMsg.appendChild(el("a", { href: url, target: "_blank", rel: "noopener noreferrer", text: "View commit ↗" }));
+        }
+        return;
+      }
+
+      // Stale sha: GitHub answers 409, and sometimes 422, when the file moved on.
+      const stale = res.status === 409 ||
+        (res.status === 422 && /sha/i.test((res.json && res.json.message) || ""));
+      if (stale) {
+        setMsg(saveMsg, "Conflict — " + repo.path + " changed on GitHub since you loaded it. Fetching the new version…", "warn");
+        return fetchFile().then(function (fresh) {
+          sha = fresh.sha;
+          document.getElementById("sha-label").textContent = "sha " + String(sha).slice(0, 7);
+          const remote = JSON.stringify(fresh.data, null, 2) + "\n";
+          const sameAsMine = remote === payload;
+          setMsg(saveMsg, sameAsMine
+            ? "Conflict resolved: the remote file already matches your edits. Nothing to commit — press Save again if you want an empty-diff commit."
+            : "Nothing was committed. Someone (or another tab) changed " + repo.path + ". Your edits are still here and the sha is refreshed — press Save again to overwrite the remote version, or Reload from GitHub to throw yours away.",
+            "warn");
+        });
+      }
+
+      throw new Error(describeHttpError(res.status, res.json));
+    }).catch(function (err) {
+      setMsg(saveMsg, "Save failed — " + String(err.message || err), "err");
+    }).then(function () { btn.disabled = false; });
+  });
+
+  document.getElementById("download-btn").addEventListener("click", function () {
+    const blob = new Blob([serialise()], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = el("a", { href: url, download: "data.json" });
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setMsg(saveMsg, "Downloaded data.json — commit it by hand if you prefer.", "ok");
+  });
+
+  /* ====================================================================
+     CHROME
+     ==================================================================== */
+  const root = document.documentElement;
+  const themeBtn = document.getElementById("theme-toggle");
+  themeBtn.addEventListener("click", function () {
+    const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    themeBtn.setAttribute("aria-pressed", String(next === "light"));
+    themeBtn.setAttribute("aria-label", next === "dark" ? "Switch to light theme" : "Switch to dark theme");
+  });
+
+  // Refuse to look safe on plain HTTP
+  const host = window.location.hostname;
+  if (window.location.protocol === "http:" && host !== "localhost" && host !== "127.0.0.1") {
+    document.getElementById("insecure-warning").hidden = false;
+  }
+
+  // Prefill owner/repo from a github.io hostname — a convenience, never the token
+  const ghMatch = host.match(/^([^.]+)\.github\.io$/);
+  if (ghMatch) {
+    document.getElementById("in-owner").value = ghMatch[1];
+    document.getElementById("in-repo").value = host;
+  }
+
+  savedSnapshot = serialise();
+})();
+</script>
+</body>
+</html>
