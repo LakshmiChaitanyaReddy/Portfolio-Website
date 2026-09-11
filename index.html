@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- Static baseline for crawlers that don't run JS. The renderer rewrites
+<!-- Static baseline for crawlers that don't run JS. render.js rewrites
      title / description / OG / canonical from data.json once it loads. -->
 <title>Chaitanya Reddy | ServiceNow Developer</title>
 <meta name="description" content="Senior ServiceNow Developer specialising in CSM, HRSD and ITSM — workflow automation, REST/SOAP integrations and custom application development.">
@@ -17,8 +17,11 @@
 <meta property="og:description" content="Senior ServiceNow Developer specialising in CSM, HRSD and ITSM — workflow automation, REST/SOAP integrations and custom application development.">
 <meta property="og:url" content="">
 <meta property="og:image" content="">
+<meta property="og:image:alt" content="">
 <meta property="og:locale" content="en_US">
 
+<!-- render.js downgrades this to "summary" when profile.ogImage is empty,
+     so an unset share image never shows up as an empty grey box. -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Chaitanya Reddy | ServiceNow Developer">
 <meta name="twitter:description" content="Senior ServiceNow Developer specialising in CSM, HRSD and ITSM — workflow automation, REST/SOAP integrations and custom application development.">
@@ -28,37 +31,31 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- Boot fonts for the skeleton. themes.js swaps in the chosen pairing. -->
+<!-- Boot fonts for the skeleton; themes.js swaps in the chosen pairing. -->
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-
-<!-- Icons. Every icon is aria-hidden and paired with real text, so a
-     blocked CDN costs you glyphs and nothing else. -->
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
 
 <style>
 /* ══════════════════════════════════════════════════════════════════════
-   THEME TOKENS
-   These are DEFAULTS ONLY. themes.js writes the active theme as inline
-   custom properties on <html>, which beat everything here — so the site
-   still renders correctly if themes.js or data.json fails to load.
-
-   To change the look, use admin.html's Theme tab (or edit themes.js).
-   To change the fallback, edit this block.
+   THEME TOKENS — DEFAULTS ONLY.
+   js/themes.js writes the active theme as inline custom properties on
+   <html>, which beat everything here, so the site still renders correctly
+   if a script or data.json fails to load. Change the look from admin.html's
+   Theme tab; change this block to change the fallback.
+   admin.html carries an identical copy of both blocks.
    ══════════════════════════════════════════════════════════════════════ */
 :root {
-  /* ── Accent. Only --accent is authored; the rest derive from it, which
-        is why changing one colour in the theme builder just works. ───── */
+  /* ── Accent. Only --accent is authored; the rest derive from it. ───── */
   --accent:        #5cc8a8;
-  --accent-lift:   #ffffff;                                           /* mixed into accent for hover  */
+  --accent-lift:   #ffffff;                                           /* mixed in for hover      */
   --accent-strong: color-mix(in srgb, var(--accent) 78%, var(--accent-lift));
   --accent-soft:   color-mix(in srgb, var(--accent) 12%, transparent);
-  --on-accent:     #06120e;                                           /* text ON a filled accent      */
+  --on-accent:     #06120e;                                           /* text ON filled accent   */
 
   /* ── Feedback ───────────────────────────────────────────────────────── */
   --danger: #ff6b6b;
   --warn:   #e3b341;
 
-  /* ── Surfaces: page → alternating band → card → chip ─────────────────── */
+  /* ── Surfaces: page → alt band → card → chip ─────────────────────────── */
   --bg:        #0d1117;
   --bg-alt:    #10161f;
   --surface:   #151c26;
@@ -79,8 +76,8 @@
   --font-display: "Space Grotesk", system-ui, sans-serif;
   --font-body:    "Inter", system-ui, -apple-system, sans-serif;
   --font-mono:    "JetBrains Mono", ui-monospace, "SF Mono", monospace;
-  --fs-scale:     1;          /* multiplies every rem on the page   */
-  --h-scale:      1;          /* multiplies heading sizes only      */
+  --fs-scale:     1;          /* multiplies every rem on the page  */
+  --h-scale:      1;          /* multiplies heading sizes only     */
   --line-height:  1.7;
   --h-weight:     600;
   --h-tracking:   -0.02em;
@@ -100,7 +97,6 @@
   --speed: .35s;
 }
 
-/* Fallback light palette, used only if themes.js doesn't load. */
 [data-theme="light"] {
   --accent:      #0f8a6a;
   --accent-lift: #000000;
@@ -165,7 +161,6 @@ a:hover { color: var(--accent-strong); }
 
 img { max-width: 100%; height: auto; display: block; }
 svg { vertical-align: middle; }
-.icon { width: 1em; height: 1em; stroke-width: 2; }
 
 .container { width: 100%; max-width: var(--maxw); margin-inline: auto; padding-inline: var(--gutter); }
 
@@ -189,6 +184,32 @@ svg { vertical-align: middle; }
 }
 
 /* ══════════════════════════════════════════════════════════════════════
+   ICONS — three shapes come out of js/icons.js: a stroked Lucide <svg>,
+   a filled brand <svg>, or an <img> for a URL/uploaded logo.
+   ══════════════════════════════════════════════════════════════════════ */
+.icon { width: 1em; height: 1em; flex: none; }
+svg.icon { stroke-width: 2; }
+svg.icon-brand, svg.icon-mono { stroke-width: 0; }
+img.icon { width: 1.05em; height: 1.05em; object-fit: contain; border-radius: 2px; }
+.contact-list .icon, .project-links .icon, .custom-links .icon { width: 1.15em; height: 1.15em; }
+
+/* ── Logo animations. Driven by theme.iconAnimation in data.json. ────── */
+.ia-lift, .ia-pop, .ia-spin, .ia-swing { transition: transform .24s var(--ease); }
+.ia-glow { transition: filter .24s var(--ease); }
+a:hover > .ia-lift,  button:hover > .ia-lift,  li:hover .ia-lift  { transform: translateY(-2px); }
+a:hover > .ia-pop,   button:hover > .ia-pop,   li:hover .ia-pop   { transform: scale(1.18); }
+a:hover > .ia-spin,  button:hover > .ia-spin,  li:hover .ia-spin  { transform: rotate(360deg); }
+a:hover > .ia-swing, button:hover > .ia-swing, li:hover .ia-swing { transform: rotate(-12deg); }
+a:hover > .ia-glow,  button:hover > .ia-glow,  li:hover .ia-glow  { filter: drop-shadow(0 0 6px var(--accent)); }
+.ia-float { animation: icon-float 3.2s ease-in-out infinite; }
+@keyframes icon-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+.ia-draw :is(path, rect, circle, line, polyline) {
+  stroke-dasharray: 140; stroke-dashoffset: 140;
+  animation: icon-draw 1.2s var(--ease) forwards;
+}
+@keyframes icon-draw { to { stroke-dashoffset: 0; } }
+
+/* ══════════════════════════════════════════════════════════════════════
    HEADER / NAV
    ══════════════════════════════════════════════════════════════════════ */
 .site-header {
@@ -202,7 +223,6 @@ svg { vertical-align: middle; }
 .site-header.is-stuck { border-bottom-color: var(--border); }
 
 .nav { display: flex; align-items: center; justify-content: space-between; gap: 1rem; height: var(--nav-h); }
-
 .brand { font-family: var(--font-mono); font-size: .95rem; font-weight: 500; color: var(--text); white-space: nowrap; }
 .brand:hover { color: var(--text); }
 .brand .dot { color: var(--accent); }
@@ -266,7 +286,7 @@ svg { vertical-align: middle; }
 .btn-ghost:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
 
 /* ══════════════════════════════════════════════════════════════════════
-   LOADING SKELETON + ERROR STATE
+   SKELETON + ERROR + TOAST
    ══════════════════════════════════════════════════════════════════════ */
 .sk { position: relative; overflow: hidden; background: var(--surface-2); border-radius: 6px; }
 .sk::after {
@@ -275,7 +295,6 @@ svg { vertical-align: middle; }
   animation: shimmer 1.5s infinite;
 }
 @keyframes shimmer { 100% { transform: translateX(100%); } }
-
 .sk-pill  { width: 220px; height: 30px; border-radius: 999px; margin-bottom: 1.6rem; }
 .sk-h1    { width: min(100%, 640px); height: 56px; margin-bottom: .9rem; }
 .sk-h1.b  { width: min(100%, 420px); }
@@ -306,8 +325,19 @@ svg { vertical-align: middle; }
 .error-detail {
   font-family: var(--font-mono); font-size: .8rem; color: var(--text-dim);
   background: var(--bg-alt); border: 1px solid var(--border); border-radius: var(--radius-sm);
-  padding: .7rem .85rem; margin: 1rem 0 1.25rem; overflow-wrap: anywhere;
+  padding: .7rem .85rem; margin: 1rem 0 1.25rem; overflow-wrap: anywhere; white-space: pre-wrap;
 }
+
+.toast {
+  position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%);
+  z-index: 300; max-width: min(92vw, 52ch); margin: 0;
+  padding: .75rem 1.05rem;
+  background: var(--surface); color: var(--text-mid);
+  border: 1px solid var(--border); border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm); box-shadow: var(--shadow);
+  font-size: .875rem; line-height: 1.5;
+}
+.toast.is-error { border-left-color: var(--danger); }
 
 /* ══════════════════════════════════════════════════════════════════════
    SECTION SCAFFOLDING
@@ -348,10 +378,8 @@ section { padding-block: var(--section-y); }
 .hero-photo {
   width: clamp(88px, 14vw, 116px); aspect-ratio: 1;
   border-radius: 50%; object-fit: cover;
-  border: 1px solid var(--border-2);
-  margin-bottom: 1.5rem;
+  border: 1px solid var(--border-2); margin-bottom: 1.5rem;
 }
-
 .hero-tag {
   display: inline-flex; align-items: center; gap: .6rem;
   padding: .35rem .8rem .35rem .6rem;
@@ -365,7 +393,6 @@ section { padding-block: var(--section-y); }
   70%  { box-shadow: 0 0 0 9px transparent; }
   100% { box-shadow: 0 0 0 0 transparent; }
 }
-
 .hero h1 { max-width: 15ch; }
 .hero-role {
   font-family: var(--font-display); font-size: calc(clamp(1.05rem, 2.6vw, 1.4rem) * var(--h-scale));
@@ -379,7 +406,6 @@ section { padding-block: var(--section-y); }
 }
 .hero-meta span { display: inline-flex; align-items: center; gap: .45rem; }
 .hero-cta { display: flex; flex-wrap: wrap; gap: .75rem; }
-
 .hero-stats {
   display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 1px;
   margin: clamp(3rem, 7vw, 4.5rem) 0 0;
@@ -395,28 +421,19 @@ section { padding-block: var(--section-y); }
 @media (min-width: 720px) { .hero-stats { grid-template-columns: repeat(4, 1fr); } }
 
 /* ══════════════════════════════════════════════════════════════════════
-   ABOUT
+   ABOUT / SKILLS / TIMELINE
    ══════════════════════════════════════════════════════════════════════ */
 .about-grid { display: grid; gap: clamp(2rem, 5vw, 3.5rem); }
 @media (min-width: 900px) { .about-grid { grid-template-columns: 1.35fr .85fr; } }
 .about-body p:last-child { margin-bottom: 0; }
 .about-body strong { color: var(--text); font-weight: 600; }
 
-.facts {
-  border: 1px solid var(--border); border-radius: var(--radius);
-  background: var(--surface); padding: 1.4rem 1.5rem; align-self: start;
-}
-.facts h3 {
-  font-family: var(--font-mono); font-size: .8rem; font-weight: 500;
-  text-transform: uppercase; letter-spacing: .09em; color: var(--text-dim);
-}
+.facts { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: 1.4rem 1.5rem; align-self: start; }
+.facts h3 { font-family: var(--font-mono); font-size: .8rem; font-weight: 500; text-transform: uppercase; letter-spacing: .09em; color: var(--text-dim); }
 .facts dl { margin: .9rem 0 0; display: grid; gap: .85rem; }
 .facts dt { font-size: .78rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .06em; }
 .facts dd { margin: .1rem 0 0; color: var(--text); font-size: .95rem; }
 
-/* ══════════════════════════════════════════════════════════════════════
-   SKILLS
-   ══════════════════════════════════════════════════════════════════════ */
 .skill-grid { display: grid; gap: var(--gap); grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr)); }
 .skill-card {
   border: 1px solid var(--border); border-radius: var(--radius);
@@ -425,11 +442,8 @@ section { padding-block: var(--section-y); }
 }
 .skill-card:hover { border-color: var(--border-2); transform: translateY(-2px); }
 .skill-card h3 { display: flex; align-items: center; gap: .6rem; font-size: calc(1rem * var(--h-scale)); margin-bottom: 1rem; }
-.skill-card h3 .icon { color: var(--accent); width: 1.05em; height: 1.05em; }
+.skill-card h3 .icon { color: var(--accent); }
 
-/* ══════════════════════════════════════════════════════════════════════
-   TIMELINE (experience + custom timeline sections)
-   ══════════════════════════════════════════════════════════════════════ */
 .timeline { position: relative; padding-left: 1.9rem; }
 .timeline::before {
   content: ""; position: absolute; left: 5px; top: .55rem; bottom: .55rem;
@@ -443,28 +457,21 @@ section { padding-block: var(--section-y); }
   background: var(--bg-alt); border: 2px solid var(--border-2);
 }
 .tl-item.is-current::before { border-color: var(--accent); background: var(--accent); }
-
 .tl-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .35rem .75rem; }
 .tl-head h3 { margin: 0; }
 .tl-date { margin-left: auto; font-family: var(--font-mono); font-size: .8rem; color: var(--text-dim); white-space: nowrap; }
-.tl-sub {
-  display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .6rem;
-  font-size: .875rem; color: var(--text-dim); margin: .15rem 0 .9rem;
-}
+.tl-sub { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .6rem; font-size: .875rem; color: var(--text-dim); margin: .15rem 0 .9rem; }
 .tl-company { color: var(--accent); font-weight: 600; }
 .tl-sep { opacity: .45; }
 .tl-dur { font-family: var(--font-mono); font-size: .75rem; padding: .1rem .45rem; border: 1px solid var(--border); border-radius: 999px; }
 .tl-summary { margin: 0 0 .9rem; }
 .tl-list { display: grid; gap: .6rem; margin-bottom: 1rem; }
 .tl-list li { position: relative; padding-left: 1.15rem; font-size: .95rem; }
-.tl-list li::before {
-  content: ""; position: absolute; left: 0; top: .68em;
-  width: 5px; height: 5px; border-radius: 50%; background: var(--accent); opacity: .65;
-}
+.tl-list li::before { content: ""; position: absolute; left: 0; top: .68em; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); opacity: .65; }
 .tl-list strong { color: var(--text); font-weight: 600; }
 
 /* ══════════════════════════════════════════════════════════════════════
-   PROJECTS + FILTER BAR
+   PROJECTS + FILTERS
    ══════════════════════════════════════════════════════════════════════ */
 .filter-bar { display: flex; flex-wrap: wrap; gap: .45rem; margin-bottom: .9rem; }
 .filter-btn {
@@ -488,7 +495,6 @@ section { padding-block: var(--section-y); }
   .project-card { grid-column: span 2; }
   .project-card.is-featured { grid-column: span 3; }
 }
-
 .project-card {
   display: flex; flex-direction: column;
   border: 1px solid var(--border); border-radius: var(--radius);
@@ -499,15 +505,12 @@ section { padding-block: var(--section-y); }
 .project-card.is-featured { padding: 1.85rem 1.95rem 1.95rem; border-color: var(--border-2); }
 .project-card.is-featured h3 { font-size: calc(1.35rem * var(--h-scale)); }
 .project-card.is-featured .project-blurb { font-size: 1.02rem; }
-
 .project-cover {
   width: calc(100% + 3.1rem); margin: -1.45rem -1.55rem 1.2rem;
   border-radius: var(--radius) var(--radius) 0 0;
-  aspect-ratio: 16 / 9; object-fit: cover;
-  border-bottom: 1px solid var(--border);
+  aspect-ratio: 16 / 9; object-fit: cover; border-bottom: 1px solid var(--border);
 }
 .project-card.is-featured .project-cover { width: calc(100% + 3.9rem); margin: -1.85rem -1.95rem 1.4rem; }
-
 .project-top { display: flex; align-items: center; gap: .7rem; margin-bottom: .7rem; }
 .project-num { font-family: var(--font-mono); font-size: .75rem; color: var(--accent); letter-spacing: .08em; }
 .featured-flag {
@@ -517,23 +520,18 @@ section { padding-block: var(--section-y); }
 }
 .project-card h3 { margin-bottom: .5rem; }
 .project-blurb { color: var(--text-mid); margin-bottom: 1.1rem; font-size: .95rem; }
-
 .pap { display: grid; gap: .8rem; margin: 0 0 1.25rem; }
 .pap > div { display: grid; grid-template-columns: 5.6rem 1fr; gap: .75rem; }
-.pap dt {
-  font-family: var(--font-mono); font-size: .72rem; text-transform: uppercase;
-  letter-spacing: .07em; color: var(--text-dim); padding-top: .18rem;
-}
+.pap dt { font-family: var(--font-mono); font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; color: var(--text-dim); padding-top: .18rem; }
 .pap dd { margin: 0; font-size: .92rem; line-height: 1.6; }
 .pap .is-result dd { color: var(--text); }
 @media (max-width: 430px) { .pap > div { grid-template-columns: 1fr; gap: .1rem; } }
-
 .project-links { display: flex; flex-wrap: wrap; gap: .9rem; margin-bottom: 1rem; font-size: .85rem; }
 .project-links a { display: inline-flex; align-items: center; gap: .35rem; }
 .project-card .chips { margin-top: auto; padding-top: .35rem; }
 
 /* ══════════════════════════════════════════════════════════════════════
-   CUSTOM SECTIONS — five layouts, all driven from data.json
+   CUSTOM SECTION LAYOUTS (js/layouts.js)
    ══════════════════════════════════════════════════════════════════════ */
 .custom-grid { display: grid; gap: var(--gap); grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
 .custom-card {
@@ -557,10 +555,7 @@ section { padding-block: var(--section-y); }
 .custom-links a { display: inline-flex; align-items: center; gap: .35rem; }
 
 .row-list { display: grid; }
-.row-item {
-  display: grid; gap: .15rem .9rem;
-  padding: 1.1rem 0; border-bottom: 1px solid var(--border);
-}
+.row-item { display: grid; gap: .15rem .9rem; padding: 1.1rem 0; border-bottom: 1px solid var(--border); }
 .row-item:first-child { padding-top: 0; }
 .row-item:last-child { border-bottom: 0; padding-bottom: 0; }
 .row-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: .3rem .8rem; }
@@ -580,8 +575,46 @@ section { padding-block: var(--section-y); }
 .gallery-figure figcaption strong { display: block; color: var(--text); font-weight: 600; margin-bottom: .15rem; }
 .gallery-figure figcaption span { color: var(--text-dim); font-size: .82rem; }
 
+.stat-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 1px;
+  margin: 0; background: var(--border); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+}
+.stat-cell { background: var(--surface); padding: 1.4rem 1.45rem; }
+.stat-cell dt {
+  font-family: var(--font-display); font-weight: 700; letter-spacing: var(--h-tracking);
+  font-size: calc(clamp(1.5rem, 4vw, 2.1rem) * var(--h-scale)); color: var(--accent);
+}
+.stat-cell dd { margin: .35rem 0 0; }
+.stat-cell dd strong { display: block; color: var(--text); font-size: .95rem; font-weight: 600; }
+.stat-cell dd span { display: block; font-size: .83rem; color: var(--text-dim); margin-top: .15rem; }
+
+.quote-grid { display: grid; gap: var(--gap); grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
+.quote-card {
+  margin: 0; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface); padding: 1.6rem 1.7rem 1.4rem;
+}
+.quote-card blockquote { margin: 0 0 1.1rem; position: relative; }
+.quote-card blockquote::before {
+  content: "\201C"; font-family: var(--font-display); font-size: 3rem; line-height: 1;
+  color: var(--accent); opacity: .35; position: absolute; left: -.15em; top: -.25em;
+}
+.quote-card blockquote p { margin: 0; font-size: 1rem; color: var(--text-mid); }
+.quote-card figcaption { display: flex; align-items: center; gap: .7rem; }
+.quote-avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; flex: none; }
+.quote-card figcaption strong { display: block; color: var(--text); font-size: .92rem; font-weight: 600; }
+.quote-card figcaption span span { font-size: .82rem; color: var(--text-dim); }
+
+.kv-table { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
+.kv-row { display: grid; gap: .2rem .9rem; padding: .85rem 1.1rem; border-bottom: 1px solid var(--border); align-items: baseline; }
+.kv-row:last-child { border-bottom: 0; }
+@media (min-width: 620px) { .kv-row { grid-template-columns: 12rem 1fr auto; } }
+.kv-key { color: var(--text); font-weight: 600; font-size: .92rem; }
+.kv-val { font-size: .92rem; display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.kv-meta { font-family: var(--font-mono); font-size: .78rem; color: var(--text-dim); }
+
 /* ══════════════════════════════════════════════════════════════════════
-   CERTIFICATIONS + EDUCATION
+   CERTIFICATIONS / EDUCATION / FOOTER
    ══════════════════════════════════════════════════════════════════════ */
 .cert-grid { display: grid; gap: var(--gap); grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
 .cert-card {
@@ -613,18 +646,11 @@ section { padding-block: var(--section-y); }
 .edu-card p { margin: 0; }
 .edu-detail { font-family: var(--font-mono); font-size: .875rem; color: var(--text); }
 
-/* ══════════════════════════════════════════════════════════════════════
-   FOOTER
-   ══════════════════════════════════════════════════════════════════════ */
 .site-footer { border-top: 1px solid var(--border); background: var(--bg-alt); padding-block: clamp(3rem, 7vw, 4.5rem) 2rem; }
 .footer-cta { max-width: 54ch; margin-bottom: 2.5rem; }
 .footer-cta h2 { margin-bottom: .5rem; }
 .footer-cta p { color: var(--text-dim); }
-
-.contact-list {
-  display: grid; gap: .75rem; margin-bottom: 2.75rem;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
-}
+.contact-list { display: grid; gap: .75rem; margin-bottom: 2.75rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
 .contact-list a {
   display: flex; align-items: center; gap: .8rem;
   padding: .9rem 1.1rem; border: 1px solid var(--border); border-radius: var(--radius-sm);
@@ -632,9 +658,8 @@ section { padding-block: var(--section-y); }
   transition: border-color .2s var(--ease), color .2s var(--ease), transform .2s var(--ease);
 }
 .contact-list a:hover { border-color: var(--accent); color: var(--text); transform: translateY(-2px); }
-.contact-list .icon { color: var(--accent); width: 1.15em; height: 1.15em; flex: none; }
+.contact-list .icon { color: var(--accent); }
 .contact-list span { overflow-wrap: anywhere; }
-
 .footer-bottom {
   display: flex; flex-wrap: wrap; gap: .5rem 1rem;
   justify-content: space-between; align-items: center;
@@ -644,68 +669,6 @@ section { padding-block: var(--section-y); }
 .footer-bottom p { margin: 0; }
 .footer-bottom a { color: var(--text-dim); }
 .footer-bottom a:hover { color: var(--accent); }
-
-/* ══════════════════════════════════════════════════════════════════════
-   PDF DIALOG
-   ══════════════════════════════════════════════════════════════════════ */
-dialog.pdf-dialog {
-  width: min(560px, calc(100vw - 2rem));
-  border: 1px solid var(--border-2); border-radius: var(--radius);
-  background: var(--surface); color: var(--text-mid);
-  padding: 0; box-shadow: var(--shadow);
-}
-dialog.pdf-dialog::backdrop { background: rgba(0,0,0,.55); backdrop-filter: blur(2px); }
-.pdf-dialog form { padding: 1.5rem 1.6rem 1.2rem; margin: 0; }
-.pdf-dialog h2 { font-size: calc(1.25rem * var(--h-scale)); margin-bottom: .3rem; }
-.pdf-dialog > form > p { font-size: .875rem; color: var(--text-dim); }
-.pdf-dialog fieldset { border: 0; padding: 0; margin: 1.2rem 0 0; }
-.pdf-dialog legend {
-  font-family: var(--font-mono); font-size: .72rem; text-transform: uppercase;
-  letter-spacing: .08em; color: var(--text-dim); padding: 0; margin-bottom: .55rem;
-}
-.pdf-opt {
-  display: flex; gap: .7rem; align-items: flex-start;
-  padding: .65rem .8rem; border: 1px solid var(--border);
-  border-radius: var(--radius-sm); margin-bottom: .4rem; cursor: pointer;
-  transition: border-color .2s var(--ease), background-color .2s var(--ease);
-}
-.pdf-opt:hover { border-color: var(--border-2); background: var(--surface-2); }
-.pdf-opt:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
-.pdf-opt input { margin-top: .3rem; accent-color: var(--accent); flex: none; }
-.pdf-opt strong { display: block; color: var(--text); font-size: .92rem; font-weight: 600; }
-.pdf-opt span { font-size: .82rem; color: var(--text-dim); }
-.pdf-paper { display: flex; gap: .4rem; }
-.pdf-paper label {
-  flex: 1; text-align: center; padding: .5rem; cursor: pointer;
-  border: 1px solid var(--border); border-radius: var(--radius-sm);
-  font-family: var(--font-mono); font-size: .8rem;
-}
-.pdf-paper label:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
-.pdf-paper input { position: absolute; opacity: 0; pointer-events: none; }
-.pdf-actions {
-  display: flex; justify-content: flex-end; gap: .6rem;
-  margin: 1.4rem -1.6rem -1.2rem; padding: 1rem 1.6rem 1.2rem;
-  border-top: 1px solid var(--border);
-}
-.pdf-note { font-size: .8rem; color: var(--text-dim); margin: 1rem 0 0; }
-
-/* ══════════════════════════════════════════════════════════════════════
-   TOAST — download progress and failures
-   ══════════════════════════════════════════════════════════════════════ */
-.toast {
-  position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%);
-  z-index: 300; max-width: min(92vw, 52ch); margin: 0;
-  padding: .75rem 1.05rem;
-  background: var(--surface); color: var(--text-mid);
-  border: 1px solid var(--border); border-left: 3px solid var(--accent);
-  border-radius: var(--radius-sm); box-shadow: var(--shadow);
-  font-size: .875rem; line-height: 1.5;
-}
-.toast.is-error { border-left-color: var(--danger); }
-.toast code {
-  font-family: var(--font-mono); font-size: .85em; color: var(--text);
-  background: var(--surface-2); padding: .1rem .3rem; border-radius: 4px;
-}
 
 /* ══════════════════════════════════════════════════════════════════════
    SCROLL REVEAL
@@ -724,98 +687,31 @@ dialog.pdf-dialog::backdrop { background: rgba(0,0,0,.55); backdrop-filter: blur
     transition-duration: .01ms !important;
   }
   .reveal { opacity: 1; transform: none; }
-  .sk::after { animation: none; }
+  .sk::after, .ia-float { animation: none; }
+  .ia-draw :is(path, rect, circle, line, polyline) { stroke-dasharray: none; stroke-dashoffset: 0; animation: none; }
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   PRINT / PDF
-   A separate resume document is built from the same data and swapped in
-   for printing. Real text, real links, real page breaks — no rasterising.
+   RESUME / PRINT
+   The resume's own styles come from js/resume.js (shared with the Word,
+   HTML and PNG exports). Only the page-level swap lives here.
+   #resume-root is filled on demand — keeping a second copy of the content
+   in the DOM would give the page two <h1>s and duplicate text for crawlers.
    ══════════════════════════════════════════════════════════════════════ */
-.print-root {
-  --pr-text: #111; --pr-mid: #333; --pr-dim: #666; --pr-line: #c9c9c9;
-  --pr-accent: var(--accent);
-  display: none;
-  background: #fff; color: var(--pr-text);
-  font-family: var(--font-body); font-size: 10pt; line-height: 1.45;
-}
-.print-root h1, .print-root h2, .print-root h3 { color: var(--pr-text); letter-spacing: -0.01em; }
-.print-root a { color: inherit; text-decoration: none; }
+#resume-root { display: none; }
 
-.pr-head { margin-bottom: 5mm; }
-.pr-head h1 { font-size: 21pt; margin: 0 0 1mm; line-height: 1.1; }
-.pr-title { font-size: 11pt; color: var(--pr-accent); font-weight: 600; margin: 0 0 2mm; }
-.pr-contact { font-size: 8.6pt; color: var(--pr-mid); margin: 0; }
-.pr-contact span::after { content: " · "; color: var(--pr-dim); }
-.pr-contact span:last-child::after { content: ""; }
-.pr-summary { font-size: 9.4pt; color: var(--pr-mid); margin: 3mm 0 0; max-width: 58em; }
-
-.pr-sec { margin-top: 6mm; break-inside: auto; }
-.pr-sec > h2 {
-  font-size: 9pt; text-transform: uppercase; letter-spacing: .12em;
-  margin: 0 0 2.5mm; padding-bottom: 1mm;
-  border-bottom: .6pt solid var(--pr-line);
-}
-.pr-entry { margin-bottom: 3.6mm; break-inside: avoid; }
-.pr-entry:last-child { margin-bottom: 0; }
-.pr-entry-top { display: flex; align-items: baseline; gap: 3mm; }
-.pr-entry-top h3 { font-size: 10.2pt; margin: 0; flex: 1; }
-.pr-when { font-size: 8.4pt; color: var(--pr-dim); white-space: nowrap; font-variant-numeric: tabular-nums; }
-.pr-where { font-size: 9pt; color: var(--pr-accent); font-weight: 600; margin: .4mm 0 1.2mm; }
-.pr-where .pr-loc { color: var(--pr-dim); font-weight: 400; }
-.pr-bullets { margin: 0; padding: 0; }
-.pr-bullets li { position: relative; padding-left: 3.6mm; font-size: 9.2pt; margin-bottom: .9mm; color: var(--pr-mid); }
-.pr-bullets li::before { content: "•"; position: absolute; left: 0; color: var(--pr-accent); }
-.pr-bullets strong { color: var(--pr-text); }
-.pr-tags { font-size: 8.2pt; color: var(--pr-dim); margin: 1mm 0 0; font-family: var(--font-mono); }
-.pr-kv { font-size: 9.2pt; margin: 0 0 1.6mm; color: var(--pr-mid); break-inside: avoid; }
-.pr-kv strong { color: var(--pr-text); }
-
-.pr-body { display: block; }
-.pr-rail { margin-top: 6mm; }
-
-/* — Sidebar: contact, skills, certs and education in a left rail — */
-.pdf-sidebar .pr-body { display: grid; grid-template-columns: 33% 1fr; gap: 0 7mm; }
-.pdf-sidebar .pr-rail { order: -1; margin-top: 0; border-right: .6pt solid var(--pr-line); padding-right: 6mm; }
-.pdf-sidebar .pr-rail .pr-sec:first-child { margin-top: 0; }
-.pdf-sidebar .pr-main .pr-sec:first-child { margin-top: 0; }
-
-/* — Classic: centred header, serif headings — */
-.pdf-classic .pr-head { text-align: center; border-bottom: 1.2pt solid var(--pr-text); padding-bottom: 4mm; }
-.pdf-classic .pr-summary { margin-inline: auto; text-align: center; }
-.pdf-classic h1, .pdf-classic h2, .pdf-classic h3 { font-family: var(--font-display); }
-.pdf-classic .pr-sec > h2 { text-align: center; border-bottom: 0; letter-spacing: .18em; }
-.pdf-classic { line-height: 1.55; }
-
-/* — Timeline: dates in a left gutter with a rule — */
-.pdf-timeline .pr-entry { display: grid; grid-template-columns: 26mm 1fr; gap: 0 4mm; }
-.pdf-timeline .pr-entry-top { display: block; }
-.pdf-timeline .pr-when { grid-column: 1; grid-row: 1 / span 4; padding-top: .6mm; }
-.pdf-timeline .pr-entry > :not(.pr-when) { grid-column: 2; border-left: .6pt solid var(--pr-line); padding-left: 4mm; margin-left: -.5mm; }
-.pdf-timeline .pr-entry-top .pr-when { display: none; }
-
-/* — Minimal: no colour, no rules, no chips — */
-.pdf-minimal { --pr-accent: #111; }
-.pdf-minimal .pr-sec > h2 { border-bottom: 0; padding-bottom: 0; letter-spacing: .16em; }
-.pdf-minimal .pr-bullets li::before { content: "–"; }
-.pdf-minimal .pr-tags { display: none; }
-.pdf-minimal .pr-where { color: var(--pr-text); }
-
-/* Screen-side print preview (used by admin.html's Preview tab) */
-body.print-preview { background: #666; }
-body.print-preview > *:not(.print-root) { display: none !important; }
-body.print-preview .print-root {
+body.resume-preview { background: #6f6f6f; }
+body.resume-preview > *:not(#resume-root) { display: none !important; }
+body.resume-preview #resume-root {
   display: block; width: 210mm; min-height: 297mm;
   margin: 8mm auto; padding: 14mm;
-  box-shadow: 0 4px 24px rgba(0,0,0,.4);
+  background: #fff; box-shadow: 0 4px 24px rgba(0,0,0,.45);
 }
-body.print-preview.paper-letter .print-root { width: 216mm; min-height: 279mm; }
+body.resume-preview.paper-letter #resume-root { width: 216mm; min-height: 279mm; }
 
 @media print {
-  body > *:not(.print-root) { display: none !important; }
-  .print-root { display: block !important; }
-  a[href^="http"]::after { content: ""; }
-  .pr-entry, .pr-kv, .gallery-figure { break-inside: avoid; }
+  body > *:not(#resume-root) { display: none !important; }
+  #resume-root { display: block !important; padding: 0; margin: 0; width: auto; min-height: 0; box-shadow: none; }
 }
 </style>
 </head>
@@ -826,14 +722,13 @@ body.print-preview.paper-letter .print-root { width: 216mm; min-height: 279mm; }
 <noscript>
   <p class="noscript">
     This portfolio renders from a JSON file in the browser. With JavaScript disabled,
-    please email <a href="mailto:lakshmichaitanyareddyi@gmail.com">lakshmichaitanyareddyi@gmail.com</a>
-    or <a href="resume.pdf">download the resume</a>.
+    please email <a href="mailto:lakshmichaitanyareddyi@gmail.com">lakshmichaitanyareddyi@gmail.com</a>.
   </p>
 </noscript>
 
 <!-- ══════════════════════════════════════════════════════════════════════
-     Empty shells. Nav links, sections, the footer and the print document
-     are all generated from data.json. Edit content there (or in admin.html).
+     Empty shells. Nav links, sections and the footer are generated from
+     data.json by js/render.js. Edit content in data.json or admin.html.
      ══════════════════════════════════════════════════════════════════ -->
 <header class="site-header" id="site-header">
   <div class="container">
@@ -842,11 +737,11 @@ body.print-preview.paper-letter .print-root { width: 216mm; min-height: 279mm; }
       <ul class="nav-links" id="nav-links"></ul>
       <div class="nav-actions">
         <button class="icon-btn" id="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="false">
-          <i class="i-sun" data-lucide="sun" aria-hidden="true"></i>
-          <i class="i-moon" data-lucide="moon" aria-hidden="true"></i>
+          <i class="i-sun icon" data-lucide="sun" aria-hidden="true"></i>
+          <i class="i-moon icon" data-lucide="moon" aria-hidden="true"></i>
         </button>
         <button class="icon-btn" id="menu-toggle" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobile-menu">
-          <i data-lucide="menu" aria-hidden="true"></i>
+          <i class="icon" data-lucide="menu" aria-hidden="true"></i>
         </button>
       </div>
     </nav>
@@ -884,1127 +779,15 @@ body.print-preview.paper-letter .print-root { width: 216mm; min-height: 279mm; }
 
 <p class="toast" id="toast" role="status" aria-live="polite" hidden></p>
 
-<dialog class="pdf-dialog" id="pdf-dialog" aria-labelledby="pdf-dialog-title"></dialog>
-
-<div class="print-root" id="print-root" aria-hidden="true"></div>
-
-<script src="themes.js"></script>
-<script>
-(function () {
-  "use strict";
-
-  /* ====================================================================
-     0. MODE
-        ?preview=1 inside an iframe → wait for data over postMessage
-        (admin.html's Preview tab). Otherwise fetch data.json normally.
-     ==================================================================== */
-  const PREVIEW = window.parent !== window &&
-                  new URLSearchParams(window.location.search).has("preview");
-  const DATA_URL = "data.json";
-  const TH = window.PortfolioThemes || null;
-  if (!TH && window.console && console.warn) {
-    console.warn("[portfolio] themes.js didn't load — falling back to the built-in Graphite palette. " +
-                 "Make sure themes.js is committed next to index.html.");
-  }
-
-  let P = {}, profile = {}, EXPERIENCE = [], PROJECTS = [], SKILLS = [], CERTS = [], EDUCATION = [], CUSTOM = [];
-  let TOTAL_MONTHS = 0, TOTAL_YEARS = "";
-  let themeMode = "dark";
-  let revealObserver = null, sectionObserver = null;
-  let pdfChoice = { template: "compact", paper: "a4" };
-
-  const arr = (v) => (Array.isArray(v) ? v.filter(Boolean) : []);
-
-  /* ====================================================================
-     1. OPTIONAL-SAFE HELPERS
-     ==================================================================== */
-  function has(v) {
-    if (v == null || v === false) return false;
-    if (Array.isArray(v)) return v.filter(has).length > 0;
-    if (typeof v === "object") return Object.keys(v).length > 0;
-    return String(v).trim() !== "";
-  }
-
-  function append(node, children) {
-    children.forEach(function (child) {
-      if (child == null || child === false || child === "" || child === true) return;
-      if (Array.isArray(child)) return append(node, child);
-      node.appendChild(child.nodeType ? child : document.createTextNode(String(child)));
-    });
-  }
-
-  function el(tag, attrs) {
-    const node = document.createElement(tag);
-    if (attrs) {
-      Object.keys(attrs).forEach(function (k) {
-        const v = attrs[k];
-        if (v == null || v === false) return;
-        if (k === "class") node.className = v;
-        else if (k === "text") node.textContent = v;
-        else if (k.slice(0, 2) === "on" && typeof v === "function") node.addEventListener(k.slice(2).toLowerCase(), v);
-        else node.setAttribute(k, v === true ? "" : v);
-      });
-    }
-    append(node, Array.prototype.slice.call(arguments, 2));
-    return node;
-  }
-
-  const icon = (name) => (has(name) ? el("i", { class: "icon", "data-lucide": name, "aria-hidden": "true" }) : null);
-  const clear = (node) => { while (node.firstChild) node.removeChild(node.firstChild); };
-
-  /* An image field is { src, alt }. No src → nothing renders. No alt →
-     treated as decorative (alt=""), which is correct for a bare photo. */
-  function image(img, cls) {
-    if (!img || !has(img.src)) return null;
-    return el("img", {
-      class: cls || null, src: img.src, alt: has(img.alt) ? img.alt : "",
-      loading: "lazy", decoding: "async"
-    });
-  }
-
-  const slug = (s) => String(s || "").toLowerCase().trim()
-    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "section";
-
-  /* ====================================================================
-     1b. TOAST + GUARDED RESUME DOWNLOAD
-         A plain <a download> saves whatever bytes come back — including a
-         404 page — under the .pdf name you asked for. That failure is
-         invisible until someone opens the file, so check the response
-         first and say what's wrong instead.
-     ==================================================================== */
-  const toast = document.getElementById("toast");
-  let toastTimer = null;
-
-  function showToast(msg, isError, ms) {
-    if (toastTimer) { window.clearTimeout(toastTimer); toastTimer = null; }
-    clear(toast);
-    append(toast, Array.isArray(msg) ? msg : [msg]);
-    toast.classList.toggle("is-error", !!isError);
-    toast.setAttribute("role", isError ? "alert" : "status");
-    toast.hidden = false;
-    if (ms) toastTimer = window.setTimeout(function () { toast.hidden = true; }, ms);
-  }
-  function hideToast() {
-    if (toastTimer) { window.clearTimeout(toastTimer); toastTimer = null; }
-    toast.hidden = true;
-  }
-
-  function sameOrigin(url) {
-    try { return new URL(url, window.location.href).origin === window.location.origin; }
-    catch (e) { return false; }
-  }
-  function fileNameFrom(url) {
-    try {
-      const last = new URL(url, window.location.href).pathname.split("/").filter(Boolean).pop();
-      return last ? decodeURIComponent(last) : "resume.pdf";
-    } catch (e) { return "resume.pdf"; }
-  }
-
-  /* Keeps the real href so right-click → Save link as, middle-click and
-     the no-JS case all still work; only intercepts a plain left-click. */
-  function guardDownload(anchor, url) {
-    if (!sameOrigin(url)) return anchor;     // cross-origin: `download` is ignored anyway
-    anchor.addEventListener("click", function (e) {
-      if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-      e.preventDefault();
-      showToast("Preparing the PDF…", false, 0);
-
-      fetch(url, { cache: "no-store" }).then(function (res) {
-        const type = (res.headers.get("content-type") || "").toLowerCase();
-        if (!res.ok) {
-          throw new Error("There's no file at " + url + " (HTTP " + res.status +
-            "). The PDF has to be committed to the repo at exactly that path — filenames are case-sensitive.");
-        }
-        if (type.indexOf("pdf") === -1) {
-          throw new Error(url + " returned " + (type.split(";")[0] || "an unknown type") +
-            " rather than a PDF. Check resumeUrl in data.json.");
-        }
-        return res.blob();
-      }).then(function (blob) {
-        const objUrl = URL.createObjectURL(blob);
-        const tmp = el("a", { href: objUrl, download: fileNameFrom(url) });
-        document.body.appendChild(tmp);
-        tmp.click();
-        document.body.removeChild(tmp);
-        window.setTimeout(function () { URL.revokeObjectURL(objUrl); }, 4000);
-        hideToast();
-      }).catch(function (err) {
-        // A TypeError here means the request never completed (offline, CORS,
-        // file://). That's not evidence the file is missing — let the browser try.
-        if (err && err.name === "TypeError") { hideToast(); window.location.href = url; return; }
-        showToast(String((err && err.message) || err), true, 12000);
-      });
-    });
-    return anchor;
-  }
-
-  /* ====================================================================
-     2. DATES
-     ==================================================================== */
-  const MONTHS = ["January","February","March","April","May","June",
-                  "July","August","September","October","November","December"];
-  const SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-
-  function parseYM(value) {
-    if (!has(value)) return null;
-    const m = String(value).trim().match(/^(\d{4})(?:-(\d{1,2}))?/);
-    if (!m) return null;
-    return { y: +m[1], m: m[2] ? Math.min(12, Math.max(1, +m[2])) : null };
-  }
-
-  const ymIndex = (d) => d.y * 12 + ((d.m || 1) - 1);
-
-  function fmtYM(value, short) {
-    const d = parseYM(value);
-    if (!d) return has(value) ? String(value).trim() : "";
-    const names = short ? SHORT : MONTHS;
-    return d.m ? names[d.m - 1] + " " + d.y : String(d.y);
-  }
-
-  function fmtRange(start, end, short) {
-    const s = fmtYM(start, short);
-    const e = has(end) ? fmtYM(end, short) : "Present";
-    if (!s) return has(end) ? e : "";
-    return s + " – " + e;
-  }
-
-  function monthsBetween(start, end) {
-    const s = parseYM(start);
-    if (!s) return 0;
-    const now = new Date();
-    const e = has(end) ? parseYM(end) : { y: now.getFullYear(), m: now.getMonth() + 1 };
-    if (!e) return 0;
-    return Math.max(0, ymIndex(e) - ymIndex(s)) + 1;
-  }
-
-  function fmtDuration(months) {
-    if (!months) return "";
-    const y = Math.floor(months / 12), m = months % 12, out = [];
-    if (y) out.push(y + " yr");
-    if (m) out.push(m + " mo");
-    return out.join(" ");
-  }
-
-  /* Total experience: earliest startDate → today. Never goes stale.
-     One decimal, floored (52 mo → "4.3"). Want a whole number? Change
-     the marked line. */
-  function computeTotals() {
-    const starts = EXPERIENCE.map((j) => parseYM(j.startDate)).filter(Boolean);
-    if (!starts.length) { TOTAL_MONTHS = 0; TOTAL_YEARS = ""; return; }
-    const earliest = starts.reduce((a, b) => (ymIndex(a) <= ymIndex(b) ? a : b));
-    TOTAL_MONTHS = monthsBetween(earliest.m ? earliest.y + "-" + earliest.m : String(earliest.y), null);
-    TOTAL_YEARS = TOTAL_MONTHS
-      ? (Math.floor((TOTAL_MONTHS / 12) * 10) / 10).toFixed(1).replace(/\.0$/, "")   // ← rounding
-      : "";
-  }
-
-  /* ====================================================================
-     3. TEXT — {{years}} / {{months}} tokens and **bold** spans
-     ==================================================================== */
-  function tokens(str) {
-    return String(str)
-      .replace(/\{\{\s*years\s*\}\}/g, TOTAL_YEARS)
-      .replace(/\{\{\s*months\s*\}\}/g, String(TOTAL_MONTHS));
-  }
-
-  function rich(str, doc) {
-    if (!has(str)) return [];
-    const d = doc || document;
-    return tokens(str).split(/\*\*([^*]+)\*\*/g).map(function (part, i) {
-      if (!part) return null;
-      if (i % 2 === 0) return d.createTextNode(part);
-      const strong = d.createElement("strong");
-      strong.textContent = part;
-      return strong;
-    });
-  }
-
-  const plain = (str) => (has(str) ? tokens(str).replace(/\*\*/g, "") : "");
-
-  function byStartDesc(list, key) {
-    return list.slice().sort(function (a, b) {
-      const A = parseYM(a[key]), B = parseYM(b[key]);
-      if (!A && !B) return 0;
-      if (!A) return 1;
-      if (!B) return -1;
-      return ymIndex(B) - ymIndex(A);
-    });
-  }
-
-  /* ====================================================================
-     4. SHARED PIECES
-     ==================================================================== */
-  function sectionHead(eyebrow, title, id, blurb) {
-    return el("div", { class: "section-head reveal" },
-      has(eyebrow) && el("p", { class: "eyebrow", text: eyebrow }),
-      el("h2", { id: id, text: title }),
-      has(blurb) && el("p", null, tokens(blurb))
-    );
-  }
-
-  function chipList(items, label) {
-    if (!has(items)) return null;
-    return el("ul", { class: "chips", role: "list", "aria-label": label || null },
-      arr(items).map((t) => el("li", { class: "chip", text: t })));
-  }
-
-  function linkRow(links, cls) {
-    const usable = arr(links).filter((l) => has(l.url));
-    if (!usable.length) return null;
-    return el("p", { class: cls },
-      usable.map((l) => el("a", { href: l.url, target: "_blank", rel: "noopener noreferrer" },
-        icon(l.icon || "external-link"), l.label || l.url)));
-  }
-
-  function wrap(id, cls, labelledBy, children) {
-    return el("section", { id: id, class: cls, "aria-labelledby": labelledBy },
-      el("div", { class: "container" }, children));
-  }
-
-  /* ====================================================================
-     5. SECTION RENDERERS
-     ==================================================================== */
-  function renderHero() {
-    const stats = [
-      has(TOTAL_YEARS) && { n: TOTAL_YEARS, label: "Years on the ServiceNow platform" },
-      PROJECTS.length > 0 && { n: PROJECTS.length + "", label: "Implementations delivered" },
-      CERTS.length > 0 && { n: CERTS.length + "", label: "ServiceNow certifications" },
-      SKILLS.length > 0 && { n: SKILLS.reduce((s, g) => s + arr(g.items).length, 0) + "", label: "Platform capabilities" }
-    ].filter(Boolean);
-
-    const canPrint = has(profile.name) && (EXPERIENCE.length || PROJECTS.length || SKILLS.length);
-
-    return el("section", { id: "top", class: "hero", "aria-labelledby": "hero-title" },
-      el("div", { class: "container" },
-        image(profile.photo, "hero-photo reveal"),
-        has(profile.status) && el("p", { class: "hero-tag reveal" },
-          el("span", { class: "pulse", "aria-hidden": "true" }), profile.status),
-
-        el("h1", { id: "hero-title", class: "reveal", style: "--delay:60ms", text: profile.name || "" }),
-        has(profile.title) && el("p", { class: "hero-role reveal", style: "--delay:120ms", text: profile.title }),
-        has(profile.tagline) && el("p", { class: "hero-pitch reveal", style: "--delay:180ms" }, rich(profile.tagline)),
-
-        (has(profile.location) || CERTS.length > 0) && el("p", { class: "hero-meta reveal", style: "--delay:220ms" },
-          has(profile.location) && el("span", null, icon("map-pin"), profile.location),
-          CERTS.length > 0 && el("span", null, icon("badge-check"),
-            CERTS.map((c) => c.abbr || c.name).filter(has).join(" · "))
-        ),
-
-        (has(profile.email) || has(profile.resumeUrl) || canPrint) &&
-        el("div", { class: "hero-cta reveal", style: "--delay:280ms" },
-          has(profile.email) && el("a", { class: "btn btn-primary", href: "mailto:" + profile.email },
-            icon("mail"), "Get in touch"),
-          has(profile.resumeUrl) && guardDownload(
-            el("a", { class: "btn btn-ghost", href: profile.resumeUrl, download: true },
-              icon("download"), "Download Resume"),
-            profile.resumeUrl),
-          canPrint && el("button", { class: "btn btn-ghost", type: "button", onclick: openPdfDialog },
-            icon("printer"), "Save as PDF")
-        ),
-
-        stats.length > 0 && el("dl", { class: "hero-stats reveal", style: "--delay:340ms" },
-          stats.map((s) => el("div", null, el("dt", { text: s.n }), el("dd", { text: s.label }))))
-      )
-    );
-  }
-
-  function renderAbout() {
-    const current = EXPERIENCE.filter((j) => !has(j.endDate))[0] || byStartDesc(EXPERIENCE, "startDate")[0];
-    const facts = [
-      has(profile.location) && ["Based in", profile.location],
-      current && has(current.company) && ["Current role", [current.role, current.company].filter(has).join(", ")],
-      SKILLS.length > 0 && ["Focus areas", SKILLS.map((g) => g.category).filter(has).slice(0, 3).join(" · ")],
-      CERTS.length > 0 && ["Certified", CERTS.map((c) => c.abbr || c.name).filter(has).join(", ")],
-      TOTAL_MONTHS > 0 && ["Experience", fmtDuration(TOTAL_MONTHS)]
-    ].filter(Boolean);
-
-    return wrap("about", "section-alt", "about-title", [
-      sectionHead("About", "Platform engineering, not just configuration", "about-title"),
-      el("div", { class: "about-grid" },
-        el("div", { class: "about-body reveal" }, arr(profile.about).map((p) => el("p", null, rich(p)))),
-        facts.length > 0 && el("aside", { class: "facts reveal", style: "--delay:120ms", "aria-label": "Quick facts" },
-          el("h3", { text: "Quick facts" }),
-          el("dl", null, facts.map((f) => el("div", null, el("dt", { text: f[0] }), el("dd", { text: f[1] }))))
-        )
-      )
-    ]);
-  }
-
-  function renderSkills() {
-    return wrap("skills", null, "skills-title", [
-      sectionHead("Skills", "What I work with", "skills-title",
-        "Grouped by where it sits in the stack — platform modules, the code underneath, and the tooling around it."),
-      el("div", { class: "skill-grid" },
-        SKILLS.map((group, i) =>
-          el("article", { class: "skill-card reveal", style: "--delay:" + i * 80 + "ms" },
-            el("h3", null, icon(group.icon), group.category || "Skills"),
-            chipList(group.items, group.category)))
-      )
-    ]);
-  }
-
-  function renderExperience() {
-    return wrap("experience", "section-alt", "experience-title", [
-      sectionHead("Experience", "Where I've built things", "experience-title"),
-      el("ol", { class: "timeline" },
-        byStartDesc(EXPERIENCE, "startDate").map(function (job, i) {
-          const current = !has(job.endDate) && has(job.startDate);
-          const range = fmtRange(job.startDate, job.endDate);
-          const dur = fmtDuration(monthsBetween(job.startDate, job.endDate));
-          const meta = [
-            has(job.company) && el("span", { class: "tl-company", text: job.company }),
-            has(dur) && el("span", { class: "tl-dur", text: dur }),
-            has(job.location) && el("span", { text: job.location })
-          ].filter(Boolean);
-
-          return el("li", {
-              class: "tl-item reveal" + (current ? " is-current" : ""),
-              style: "--delay:" + i * 100 + "ms"
-            },
-            el("div", { class: "tl-head" },
-              el("h3", { text: job.role || job.company || "Role" }),
-              has(range) && el("p", { class: "tl-date", text: range })),
-            meta.length > 0 && el("p", { class: "tl-sub" },
-              meta.reduce((acc, node, idx) => acc.concat(idx ? [el("span", { class: "tl-sep", text: "·" }), node] : [node]), [])),
-            has(job.summary) && el("p", { class: "tl-summary" }, rich(job.summary)),
-            has(job.highlights) && el("ul", { class: "tl-list", role: "list" },
-              arr(job.highlights).map((h) => el("li", null, rich(h)))),
-            chipList(job.tech, (job.company || "Role") + " technologies")
-          );
-        })
-      )
-    ]);
-  }
-
-  function renderProjects() {
-    const ordered = PROJECTS.slice().sort((a, b) => (b.featured === true) - (a.featured === true));
-
-    const counts = new Map();
-    ordered.forEach((p) => arr(p.tech).forEach((t) => counts.set(t, (counts.get(t) || 0) + 1)));
-    const techs = Array.from(counts.keys()).sort((a, b) => counts.get(b) - counts.get(a) || a.localeCompare(b));
-
-    const cards = [];
-    const grid = el("div", { class: "project-grid" },
-      ordered.map(function (p, i) {
-        const pap = [
-          has(p.problem) && ["Problem", p.problem, ""],
-          has(p.approach) && ["Approach", p.approach, ""],
-          has(p.result) && ["Result", p.result, "is-result"]
-        ].filter(Boolean);
-
-        const node = el("article", {
-            class: "project-card reveal" + (p.featured ? " is-featured" : ""),
-            style: "--delay:" + Math.min(i, 4) * 80 + "ms"
-          },
-          image(p.image, "project-cover"),
-          el("div", { class: "project-top" },
-            el("span", { class: "project-num", text: String(i + 1).padStart(2, "0") }),
-            p.featured === true && el("span", { class: "featured-flag", text: "Featured" })),
-          el("h3", { text: p.title || "Project" }),
-          has(p.blurb) && el("p", { class: "project-blurb" }, rich(p.blurb)),
-          pap.length > 0 && el("dl", { class: "pap" },
-            pap.map((row) => el("div", { class: row[2] || null },
-              el("dt", { text: row[0] }), el("dd", null, rich(row[1]))))),
-          linkRow(p.links, "project-links"),
-          chipList(p.tech, (p.title || "Project") + " technologies")
-        );
-
-        cards.push({ node: node, tech: arr(p.tech) });
-        return node;
-      })
-    );
-
-    const status = el("p", { class: "filter-status", role: "status", "aria-live": "polite" });
-    const buttons = [];
-
-    function applyFilter(tech, pressed) {
-      let shown = 0;
-      cards.forEach(function (c) {
-        const match = tech === null || c.tech.indexOf(tech) !== -1;
-        c.node.hidden = !match;
-        if (match) shown++;
-      });
-      buttons.forEach((b) => b.setAttribute("aria-pressed", String(b === pressed)));
-      status.textContent = "Showing " + shown + " of " + cards.length +
-        " projects" + (tech ? " tagged “" + tech + "”" : "");
-    }
-
-    const bar = techs.length > 0 && el("div", {
-        class: "filter-bar reveal", role: "group", "aria-label": "Filter projects by technology"
-      },
-      [null].concat(techs).map(function (tech) {
-        const btn = el("button", {
-          type: "button", class: "filter-btn",
-          "aria-pressed": String(tech === null),
-          text: tech === null ? "All" : tech,
-          onclick: function () { applyFilter(tech, btn); }
-        });
-        buttons.push(btn);
-        return btn;
-      })
-    );
-
-    if (techs.length) applyFilter(null, buttons[0]);
-
-    return wrap("projects", null, "projects-title", [
-      sectionHead("Projects", "Selected implementations", "projects-title",
-        "Each one framed the way I think about delivery: what was broken, what I built, and what changed afterwards."),
-      bar,
-      techs.length > 0 && status,
-      grid
-    ]);
-  }
-
-  function renderCertifications() {
-    return wrap("certifications", "section-alt", "certifications-title", [
-      sectionHead("Certifications", "Certified and current", "certifications-title"),
-      el("div", { class: "cert-grid" },
-        CERTS.map(function (c, i) {
-          const sub = [c.abbr, c.issuer, c.year].filter(has);
-          return el("article", { class: "cert-card reveal", style: "--delay:" + i * 80 + "ms" },
-            el("span", { class: "cert-badge", "aria-hidden": "true" }, icon(c.icon || "shield-check")),
-            el("div", null,
-              el("h3", { text: c.name || "Certification" }),
-              sub.length > 0 && el("p", null,
-                has(c.abbr) && el("span", { class: "cert-code", text: c.abbr }),
-                sub.slice(has(c.abbr) ? 1 : 0).map((s, j) => (j || has(c.abbr) ? " · " : "") + s).join("")),
-              has(c.credentialUrl) && el("a", {
-                  class: "cert-verify", href: c.credentialUrl, target: "_blank", rel: "noopener noreferrer"
-                }, icon("external-link"), "Verify credential",
-                el("span", { class: "visually-hidden", text: " — " + (c.name || "certification") }))
-            )
-          );
-        })
-      )
-    ]);
-  }
-
-  function renderEducation() {
-    return wrap("education", null, "education-title", [
-      sectionHead("Education", "Academic background", "education-title"),
-      el("div", { class: "edu-list" },
-        byStartDesc(EDUCATION, "startYear").map(function (e, i) {
-          const range = fmtRange(e.startYear, e.endYear);
-          return el("article", { class: "edu-card reveal", style: "--delay:" + i * 80 + "ms" },
-            el("div", { class: "edu-top" },
-              el("h3", { text: e.degree || e.institution || "Education" }),
-              has(range) && el("p", { class: "edu-date", text: range })),
-            has(e.degree) && has(e.institution) && el("p", { text: e.institution }),
-            has(e.detail) && el("p", { class: "edu-detail", text: e.detail })
-          );
-        })
-      )
-    ]);
-  }
-
-  /* ── Custom sections: five layouts, chosen per section in data.json ── */
-  function renderCustomSection(sec, id) {
-    const items = arr(sec.items);
-    const layout = sec.layout || "cards";
-    const titleId = id + "-title";
-    const head = sectionHead(sec.eyebrow || sec.title, sec.title || "Section", titleId, sec.blurb);
-    let bodyNode;
-
-    if (layout === "timeline") {
-      bodyNode = el("ol", { class: "timeline" }, items.map(function (it, i) {
-        return el("li", { class: "tl-item reveal", style: "--delay:" + Math.min(i, 6) * 90 + "ms" },
-          el("div", { class: "tl-head" },
-            el("h3", { text: it.title || "Entry" }),
-            has(it.meta) && el("p", { class: "tl-date", text: it.meta })),
-          has(it.subtitle) && el("p", { class: "tl-sub" }, el("span", { class: "tl-company", text: it.subtitle })),
-          has(it.body) && el("p", { class: "tl-summary" }, rich(it.body)),
-          has(it.bullets) && el("ul", { class: "tl-list", role: "list" },
-            arr(it.bullets).map((b) => el("li", null, rich(b)))),
-          linkRow(it.links, "custom-links"),
-          chipList(it.tags, it.title));
-      }));
-
-    } else if (layout === "list") {
-      bodyNode = el("div", { class: "row-list" }, items.map(function (it, i) {
-        return el("article", { class: "row-item reveal", style: "--delay:" + Math.min(i, 8) * 60 + "ms" },
-          el("div", { class: "row-top" },
-            el("h3", { text: it.title || "Entry" }),
-            has(it.meta) && el("p", { class: "row-meta", text: it.meta })),
-          has(it.subtitle) && el("p", { class: "row-sub", text: it.subtitle }),
-          has(it.body) && el("p", { class: "row-body" }, rich(it.body)),
-          has(it.bullets) && el("ul", { class: "tl-list", role: "list", style: "margin-top:.5rem" },
-            arr(it.bullets).map((b) => el("li", null, rich(b)))),
-          linkRow(it.links, "custom-links"),
-          chipList(it.tags, it.title));
-      }));
-
-    } else if (layout === "prose") {
-      bodyNode = el("div", { class: "prose-block about-body reveal" }, items.map(function (it) {
-        return [
-          has(it.title) && el("h3", { text: it.title }),
-          has(it.subtitle) && el("p", { class: "custom-sub", text: it.subtitle }),
-          has(it.body) && el("p", null, rich(it.body)),
-          has(it.bullets) && el("ul", { class: "tl-list", role: "list" },
-            arr(it.bullets).map((b) => el("li", null, rich(b)))),
-          linkRow(it.links, "custom-links")
-        ];
-      }));
-
-    } else if (layout === "gallery") {
-      bodyNode = el("div", { class: "gallery-grid" }, items.map(function (it, i) {
-        const img = image(it.image, null);
-        if (!img && !has(it.title)) return null;
-        return el("figure", { class: "gallery-figure reveal", style: "--delay:" + Math.min(i, 8) * 70 + "ms" },
-          img,
-          (has(it.title) || has(it.body) || has(it.meta)) && el("figcaption", null,
-            has(it.title) && el("strong", { text: it.title }),
-            has(it.body) && el("span", { text: plain(it.body) }),
-            has(it.meta) && el("span", { text: (has(it.body) ? " · " : "") + it.meta })));
-      }).filter(Boolean));
-
-    } else {   // cards
-      bodyNode = el("div", { class: "custom-grid" }, items.map(function (it, i) {
-        return el("article", { class: "custom-card reveal", style: "--delay:" + Math.min(i, 6) * 80 + "ms" },
-          image(it.image, "custom-cover"),
-          has(it.meta) && el("p", { class: "custom-meta", text: it.meta }),
-          el("h3", { text: it.title || "Entry" }),
-          has(it.subtitle) && el("p", { class: "custom-sub", text: it.subtitle }),
-          has(it.body) && el("p", { class: "custom-body" }, rich(it.body)),
-          has(it.bullets) && el("ul", { class: "tl-list", role: "list", style: "margin-bottom:.9rem" },
-            arr(it.bullets).map((b) => el("li", null, rich(b)))),
-          linkRow(it.links, "custom-links"),
-          chipList(it.tags, it.title));
-      }));
-    }
-
-    return wrap(id, sec.altBackground === true ? "section-alt" : null, titleId, [head, bodyNode]);
-  }
-
-  function renderContact(footer) {
-    const items = [
-      has(profile.email) && { href: "mailto:" + profile.email, icon: "mail", text: profile.email },
-      has(profile.phone) && { href: "tel:" + String(profile.phone).replace(/[^\d+]/g, ""), icon: "phone", text: profile.phone }
-    ].filter(Boolean)
-     .concat(arr(profile.links).filter((l) => has(l.url)).map((l) => ({
-        href: l.url, icon: l.icon || "link", text: l.label || l.url, external: true })))
-     .concat(has(profile.resumeUrl)
-        ? [{ href: profile.resumeUrl, icon: "file-down", text: "Download Resume (PDF)", download: true, guard: true }] : []);
-
-    append(footer, [el("div", { class: "container" },
-      el("div", { class: "footer-cta reveal" },
-        el("p", { class: "eyebrow", text: "Contact" }),
-        el("h2", { id: "contact-title", text: "Let's talk ServiceNow" }),
-        el("p", { text: "Happy to discuss platform work, integration design or a role — the inbox is the fastest way to reach me." })),
-      items.length > 0 && el("ul", { class: "contact-list reveal", role: "list", style: "--delay:80ms" },
-        items.map(function (it) {
-          const a = el("a", {
-            href: it.href,
-            target: it.external ? "_blank" : null,
-            rel: it.external ? "noopener noreferrer" : null,
-            download: it.download ? true : null
-          }, icon(it.icon), el("span", { text: it.text }));
-          return el("li", null, it.guard ? guardDownload(a, it.href) : a);
-        })),
-      el("div", { class: "footer-bottom" },
-        el("p", { text: "© " + new Date().getFullYear() + (has(profile.name) ? " " + profile.name : "") }),
-        el("a", { href: "#top", text: "Back to top ↑" }))
-    )]);
-    footer.setAttribute("aria-labelledby", "contact-title");
-    footer.hidden = false;
-  }
-
-  /* ====================================================================
-     6. SECTION LIST — built-ins + custom, ordered and filtered by data
-     ==================================================================== */
-  function buildSectionList() {
-    const builtins = [
-      { id: "about",          label: "About",          when: () => has(profile.about), render: renderAbout },
-      { id: "skills",         label: "Skills",         when: () => SKILLS.length > 0,  render: renderSkills },
-      { id: "experience",     label: "Experience",     when: () => EXPERIENCE.length > 0, render: renderExperience },
-      { id: "projects",       label: "Projects",       when: () => PROJECTS.length > 0, render: renderProjects },
-      { id: "certifications", label: "Certifications", when: () => CERTS.length > 0,   render: renderCertifications },
-      { id: "education",      label: "Education",      when: () => EDUCATION.length > 0, render: renderEducation }
-    ].filter(function (s) { try { return s.when(); } catch (e) { return false; } });
-
-    const used = {};
-    builtins.forEach((b) => { used[b.id] = true; });
-
-    const customs = CUSTOM.filter((s) => has(s.title) && arr(s.items).length > 0).map(function (sec) {
-      let id = slug(sec.id || sec.title);
-      while (used[id]) id = id + "-x";          // never collide with a built-in
-      used[id] = true;
-      return { id: id, label: sec.title, custom: sec, render: () => renderCustomSection(sec, id) };
-    });
-
-    const hidden = arr(P.hiddenSections).map(String);
-    const order = arr(P.sectionOrder).map(String);
-    const rank = (s) => {
-      const i = order.indexOf(s.id);
-      return i === -1 ? 9999 : i;               // unlisted sections keep natural order, at the end
-    };
-
-    const all = builtins.concat(customs)
-      .filter((s) => hidden.indexOf(s.id) === -1)
-      .map((s, i) => ({ s: s, i: i }))
-      .sort((a, b) => (rank(a.s) - rank(b.s)) || (a.i - b.i))
-      .map((x) => x.s);
-
-    const contactHasData = has(profile.email) || has(profile.phone) || has(profile.links);
-    if (contactHasData && hidden.indexOf("contact") === -1) {
-      all.push({ id: "contact", label: "Contact", footer: true });   // always last: it is the footer
-    }
-    return all;
-  }
-
-  /* ====================================================================
-     7. HEAD — title, meta, Open Graph, JSON-LD (schema.org Person)
-     ==================================================================== */
-  function setMeta(selector, attr, value) {
-    const node = document.head.querySelector(selector);
-    if (node && has(value)) node.setAttribute(attr, value);
-  }
-
-  function renderHead() {
-    const who = profile.shortName || profile.name;
-    const desc = plain(profile.tagline);
-    const url = has(profile.siteUrl) ? String(profile.siteUrl).replace(/\/$/, "") : "";
-    const img = has(profile.ogImage) ? (url ? url + "/" + profile.ogImage : profile.ogImage) : "";
-
-    if (has(who) && has(profile.title)) document.title = who + " | " + profile.title;
-
-    setMeta('meta[name="description"]', "content", desc);
-    setMeta('meta[name="author"]', "content", profile.name);
-    setMeta('meta[property="og:title"]', "content", document.title);
-    setMeta('meta[property="og:description"]', "content", desc);
-    setMeta('meta[property="og:url"]', "content", url);
-    setMeta('meta[property="og:image"]', "content", img);
-    setMeta('meta[name="twitter:title"]', "content", document.title);
-    setMeta('meta[name="twitter:description"]', "content", desc);
-    setMeta('meta[name="twitter:image"]', "content", img);
-    setMeta('link[rel="canonical"]', "href", url);
-
-    const loc = String(profile.location || "").split(",").map((s) => s.trim()).filter(Boolean);
-    const current = EXPERIENCE.filter((j) => !has(j.endDate))[0];
-    const person = { "@context": "https://schema.org", "@type": "Person" };
-
-    if (has(profile.name)) person.name = profile.name;
-    if (has(profile.title)) person.jobTitle = profile.title;
-    if (has(desc)) person.description = desc;
-    if (has(profile.email)) person.email = "mailto:" + profile.email;
-    if (has(profile.phone)) person.telephone = profile.phone;
-    if (has(url)) person.url = url;
-    if (img) person.image = img;
-    else if (profile.photo && has(profile.photo.src)) person.image = profile.photo.src;
-    if (loc.length) {
-      person.address = { "@type": "PostalAddress", addressLocality: loc[0] };
-      if (loc[1]) person.address.addressCountry = loc[1];
-    }
-    const sameAs = arr(profile.links).map((l) => l.url).filter((u) => has(u) && /^https?:/i.test(u));
-    if (sameAs.length) person.sameAs = sameAs;
-    if (current && has(current.company)) person.worksFor = { "@type": "Organization", name: current.company };
-    const knows = SKILLS.reduce((a, g) => a.concat(arr(g.items)), []);
-    if (knows.length) person.knowsAbout = knows;
-    const school = byStartDesc(EDUCATION, "startYear")[0];
-    if (school && has(school.institution)) person.alumniOf = { "@type": "EducationalOrganization", name: school.institution };
-    if (CERTS.length) {
-      person.hasCredential = CERTS.filter((c) => has(c.name)).map(function (c) {
-        const cred = { "@type": "EducationalOccupationalCredential", name: c.name };
-        if (has(c.issuer)) cred.recognizedBy = { "@type": "Organization", name: c.issuer };
-        if (has(c.credentialUrl)) cred.url = c.credentialUrl;
-        return cred;
-      });
-    }
-
-    const old = document.getElementById("ld-person");
-    if (old) old.remove();
-    document.head.appendChild(el("script", { type: "application/ld+json", id: "ld-person", text: JSON.stringify(person) }));
-  }
-
-  /* ====================================================================
-     8. THEME
-     ==================================================================== */
-  function applyCurrentTheme() {
-    document.documentElement.setAttribute("data-theme", themeMode);
-    if (!TH) return;
-    const resolved = TH.resolveTheme(P.theme || {});
-    TH.applyTheme(document, resolved, themeMode);
-    const meta = document.head.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", (resolved.vars[themeMode] || {})["--bg"] || "#0d1117");
-    const btn = document.getElementById("theme-toggle");
-    if (btn) {
-      btn.setAttribute("aria-pressed", String(themeMode === "light"));
-      btn.setAttribute("aria-label", themeMode === "dark" ? "Switch to light theme" : "Switch to dark theme");
-    }
-  }
-
-  function setMode(next) {
-    themeMode = next === "light" ? "light" : "dark";
-    applyCurrentTheme();
-  }
-
-  /* ====================================================================
-     9. PRINT DOCUMENT — a real resume built from the same data
-     ==================================================================== */
-  const printRoot = document.getElementById("print-root");
-
-  function prSection(title, children) {
-    const kids = children.filter(Boolean);
-    if (!kids.length) return null;
-    return el("section", { class: "pr-sec" }, el("h2", { text: title }), kids);
-  }
-
-  function buildPrintDoc(template, paper) {
-    const exclude = arr((P.pdf || {}).exclude).map(String);
-    const skip = (id) => exclude.indexOf(id) !== -1;
-
-    clear(printRoot);
-    printRoot.className = "print-root pdf-" + (template || "compact");
-
-    const contact = [
-      has(profile.location) && profile.location,
-      has(profile.email) && profile.email,
-      has(profile.phone) && profile.phone
-    ].filter(Boolean).concat(arr(profile.links).filter((l) => has(l.url)).map((l) => l.label || l.url));
-
-    const head = el("header", { class: "pr-head" },
-      el("h1", { text: profile.name || "" }),
-      has(profile.title) && el("p", { class: "pr-title", text: profile.title }),
-      contact.length > 0 && el("p", { class: "pr-contact" }, contact.map((c) => el("span", { text: c }))),
-      has(profile.tagline) && el("p", { class: "pr-summary", text: plain(profile.tagline) })
-    );
-
-    /* — main column — */
-    const experience = !skip("experience") && EXPERIENCE.length > 0 && prSection("Experience",
-      byStartDesc(EXPERIENCE, "startDate").map(function (job) {
-        const where = [job.company, job.location].filter(has);
-        return el("article", { class: "pr-entry" },
-          el("span", { class: "pr-when", text: fmtRange(job.startDate, job.endDate, true) }),
-          el("div", { class: "pr-entry-top" },
-            el("h3", { text: job.role || job.company || "Role" }),
-            el("span", { class: "pr-when", text: fmtRange(job.startDate, job.endDate, true) })),
-          where.length > 0 && el("p", { class: "pr-where" },
-            has(job.company) && el("span", { text: job.company }),
-            has(job.location) && el("span", { class: "pr-loc", text: (has(job.company) ? " · " : "") + job.location })),
-          has(job.summary) && el("p", { class: "pr-kv" }, rich(job.summary)),
-          has(job.highlights) && el("ul", { class: "pr-bullets" }, arr(job.highlights).map((h) => el("li", null, rich(h)))),
-          has(job.tech) && el("p", { class: "pr-tags", text: arr(job.tech).join(" · ") })
-        );
-      }));
-
-    const projects = !skip("projects") && PROJECTS.length > 0 && prSection("Selected projects",
-      PROJECTS.slice().sort((a, b) => (b.featured === true) - (a.featured === true)).map(function (p) {
-        const line = [p.result, p.approach, p.blurb].filter(has)[0];
-        return el("article", { class: "pr-entry" },
-          el("span", { class: "pr-when", text: "" }),
-          el("div", { class: "pr-entry-top" }, el("h3", { text: p.title || "Project" })),
-          has(line) && el("p", { class: "pr-kv" }, rich(line)),
-          has(p.tech) && el("p", { class: "pr-tags", text: arr(p.tech).join(" · ") }));
-      }));
-
-    const customMain = CUSTOM.filter((s) => has(s.title) && arr(s.items).length && !skip(slug(s.id || s.title)))
-      .map(function (sec) {
-        return prSection(sec.title, arr(sec.items).map(function (it) {
-          return el("article", { class: "pr-entry" },
-            el("span", { class: "pr-when", text: it.meta || "" }),
-            el("div", { class: "pr-entry-top" },
-              el("h3", { text: it.title || "Entry" }),
-              has(it.meta) && el("span", { class: "pr-when", text: it.meta })),
-            has(it.subtitle) && el("p", { class: "pr-where", text: it.subtitle }),
-            has(it.body) && el("p", { class: "pr-kv" }, rich(it.body)),
-            has(it.bullets) && el("ul", { class: "pr-bullets" }, arr(it.bullets).map((b) => el("li", null, rich(b)))),
-            has(it.tags) && el("p", { class: "pr-tags", text: arr(it.tags).join(" · ") }));
-        }));
-      }).filter(Boolean);
-
-    /* — rail column — */
-    const skills = !skip("skills") && SKILLS.length > 0 && prSection("Skills",
-      SKILLS.map((g) => el("p", { class: "pr-kv" },
-        el("strong", { text: (g.category || "Skills") + ": " }), arr(g.items).join(", "))));
-
-    const certs = !skip("certifications") && CERTS.length > 0 && prSection("Certifications",
-      CERTS.map((c) => el("p", { class: "pr-kv" },
-        el("strong", { text: c.name || "" }),
-        [c.issuer, c.year].filter(has).length ? el("span", { text: " — " + [c.issuer, c.year].filter(has).join(", ") }) : null)));
-
-    const education = !skip("education") && EDUCATION.length > 0 && prSection("Education",
-      byStartDesc(EDUCATION, "startYear").map((e) => el("p", { class: "pr-kv" },
-        el("strong", { text: e.degree || e.institution || "" }),
-        has(e.degree) && has(e.institution) ? el("span", { text: " — " + e.institution }) : null,
-        el("span", { text: [fmtRange(e.startYear, e.endYear), e.detail].filter(has).map((x) => " · " + x).join("") }))));
-
-    append(printRoot, [
-      head,
-      el("div", { class: "pr-body" },
-        el("div", { class: "pr-main" }, [experience, projects].concat(customMain).filter(Boolean)),
-        el("aside", { class: "pr-rail" }, [skills, certs, education].filter(Boolean)))
-    ]);
-
-    // @page size can't come from a custom property, so it gets its own tag.
-    let pageStyle = document.getElementById("page-size");
-    if (!pageStyle) {
-      pageStyle = el("style", { id: "page-size" });
-      document.head.appendChild(pageStyle);
-    }
-    pageStyle.textContent = "@page { size: " + (paper === "letter" ? "Letter" : "A4") + "; margin: 14mm; }";
-  }
-
-  /* ── The dialog ── */
-  function openPdfDialog() {
-    const dlg = document.getElementById("pdf-dialog");
-    const templates = (TH && TH.PDF_TEMPLATES) || [{ id: "compact", name: "Compact", blurb: "One column." }];
-    clear(dlg);
-
-    const form = el("form", { method: "dialog" },
-      el("h2", { id: "pdf-dialog-title", text: "Save as PDF" }),
-      el("p", { text: "Your content, re-laid-out as a resume. Pick a layout, then choose “Save as PDF” as the destination in the print dialog." }),
-      el("fieldset", null,
-        el("legend", { text: "Layout" }),
-        templates.map((t) => el("label", { class: "pdf-opt" },
-          el("input", { type: "radio", name: "tpl", value: t.id, checked: t.id === pdfChoice.template }),
-          el("span", null, el("strong", { text: t.name }), el("span", { text: t.blurb }))))),
-      el("fieldset", null,
-        el("legend", { text: "Paper" }),
-        el("div", { class: "pdf-paper" },
-          [["a4", "A4"], ["letter", "US Letter"]].map((p) => el("label", null,
-            el("input", { type: "radio", name: "paper", value: p[0], checked: p[0] === pdfChoice.paper }),
-            p[1])))),
-      el("p", { class: "pdf-note", text: "Tip: turn off “Headers and footers” in the print dialog for a clean page." }),
-      el("div", { class: "pdf-actions" },
-        el("button", { class: "btn btn-ghost", type: "button", value: "cancel",
-          onclick: function () { dlg.close("cancel"); } }, "Cancel"),
-        el("button", { class: "btn btn-primary", type: "submit", value: "print" }, icon("printer"), "Open print dialog"))
-    );
-
-    form.addEventListener("submit", function () {
-      const tpl = form.querySelector('input[name="tpl"]:checked');
-      const paper = form.querySelector('input[name="paper"]:checked');
-      pdfChoice = { template: tpl ? tpl.value : "compact", paper: paper ? paper.value : "a4" };
-      buildPrintDoc(pdfChoice.template, pdfChoice.paper);
-      window.setTimeout(function () { window.print(); }, 60);
-    });
-
-    dlg.appendChild(form);
-    drawIcons();
-    if (typeof dlg.showModal === "function") dlg.showModal();
-    else { buildPrintDoc(pdfChoice.template, pdfChoice.paper); window.print(); }
-  }
-
-  /* ====================================================================
-     10. RENDER — safe to call repeatedly (the Preview tab does exactly that)
-     ==================================================================== */
-  const main = document.getElementById("main");
-  const navList = document.getElementById("nav-links");
-  const mobileList = document.getElementById("mobile-links");
-  const footer = document.getElementById("contact");
-  const brand = document.getElementById("brand");
-  const loadStatus = document.getElementById("load-status");
-
-  function render(data) {
-    P = data && typeof data === "object" ? data : {};
-    profile = P.profile && typeof P.profile === "object" ? P.profile : {};
-    EXPERIENCE = arr(P.experience);
-    PROJECTS   = arr(P.projects);
-    SKILLS     = arr(P.skills);
-    CERTS      = arr(P.certifications);
-    EDUCATION  = arr(P.education);
-    CUSTOM     = arr(P.sections);
-    computeTotals();
-
-    const cfgMode = (P.theme && P.theme.mode) === "light" ? "light" : "dark";
-    themeMode = cfgMode;
-    applyCurrentTheme();
-
-    const pdfCfg = P.pdf && typeof P.pdf === "object" ? P.pdf : {};
-    pdfChoice = {
-      template: has(pdfCfg.template) ? pdfCfg.template : "compact",
-      paper: pdfCfg.paper === "letter" ? "letter" : "a4"
-    };
-
-    if (revealObserver) revealObserver.disconnect();
-    if (sectionObserver) sectionObserver.disconnect();
-
-    clear(main); clear(navList); clear(mobileList); clear(footer);
-    footer.hidden = true;
-
-    clear(brand);
-    const first = String(profile.shortName || profile.name || "").trim().split(/\s+/)[0] || "portfolio";
-    append(brand, [first.toLowerCase(), el("span", { class: "dot", text: "." }), "dev"]);
-    brand.setAttribute("aria-label", (profile.name || "Home") + " — back to top");
-
-    renderHead();
-    main.appendChild(renderHero());
-
-    const active = buildSectionList();
-    active.forEach(function (s) {
-      if (s.footer) renderContact(footer);
-      else main.appendChild(s.render());
-    });
-
-    [navList, mobileList].forEach(function (list) {
-      active.forEach(function (s) {
-        list.appendChild(el("li", null, el("a", { href: "#" + s.id, text: s.label })));
-      });
-    });
-
-    // The print document is built on demand, not now: keeping a second
-    // copy of the content (with its own <h1>) in the DOM at all times
-    // would give the page two h1s and duplicate text for crawlers.
-    clear(printRoot);
-
-    main.setAttribute("aria-busy", "false");
-    loadStatus.textContent = "Portfolio loaded.";
-
-    drawIcons();
-    setupReveal();
-    setupActiveNav(active);
-  }
-
-  function showError(err) {
-    clear(main);
-    main.setAttribute("aria-busy", "false");
-    loadStatus.textContent = "The portfolio content failed to load.";
-
-    const isFile = window.location.protocol === "file:";
-    main.appendChild(el("section", { class: "hero", "aria-labelledby": "err-title" },
-      el("div", { class: "container" },
-        el("div", { class: "error-panel", role: "alert" },
-          el("p", { class: "eyebrow", text: "Content unavailable" }),
-          el("h2", { id: "err-title", text: "Couldn't load data.json" }),
-          el("p", { text: "The page loaded, but the content file behind it didn't. Everything below is generated from that file." }),
-          el("p", { class: "error-detail", text: String((err && err.message) || err) }),
-          isFile
-            ? el("p", null, "You opened this file directly from disk, and browsers block ",
-                el("code", { text: "fetch()" }), " on ", el("code", { text: "file://" }),
-                " URLs. Serve the folder over HTTP instead — for example ",
-                el("code", { text: "python3 -m http.server" }), " — or view it on GitHub Pages.")
-            : el("p", null, "Check that ", el("code", { text: "data.json" }),
-                " sits next to this page and contains valid JSON."),
-          el("div", { class: "hero-cta", style: "margin-top:1.5rem" },
-            el("button", { class: "btn btn-primary", type: "button", onclick: load }, icon("refresh-cw"), "Try again"),
-            el("a", { class: "btn btn-ghost", href: "mailto:lakshmichaitanyareddyi@gmail.com" }, icon("mail"), "Email instead"))
-        )
-      )
-    ));
-    drawIcons();
-  }
-
-  /* ====================================================================
-     11. LOAD + PREVIEW BRIDGE
-     ==================================================================== */
-  function load() {
-    loadStatus.textContent = "Loading portfolio…";
-    main.setAttribute("aria-busy", "true");
-    fetch(DATA_URL, { cache: "no-store" })
-      .then(function (res) {
-        if (!res.ok) throw new Error("HTTP " + res.status + " " + (res.statusText || "") + " while fetching " + DATA_URL);
-        return res.text();
-      })
-      .then(function (body) {
-        let data;
-        try { data = JSON.parse(body); }
-        catch (e) { throw new Error("data.json is not valid JSON — " + e.message); }
-        render(data);
-      })
-      .catch(showError);
-  }
-
-  function setPrintPreview(on, template, paper) {
-    document.body.classList.toggle("print-preview", !!on);
-    document.body.classList.toggle("paper-letter", !!on && paper === "letter");
-    if (on) buildPrintDoc(template || pdfChoice.template, paper || pdfChoice.paper);
-  }
-
-  function onPreviewMessage(event) {
-    if (event.source !== window.parent) return;
-    const msg = event.data;
-    if (!msg || msg.type !== "portfolio:data") return;
-    try {
-      render(msg.data);
-      if (msg.mode === "light" || msg.mode === "dark") setMode(msg.mode);
-      setPrintPreview(msg.view === "print", msg.pdfTemplate, msg.paper);
-    } catch (e) { showError(e); }
-  }
-
-  /* ====================================================================
-     12. CHROME
-     ==================================================================== */
-  function drawIcons() { if (window.lucide && window.lucide.createIcons) window.lucide.createIcons(); }
-  document.addEventListener("DOMContentLoaded", drawIcons);
-  window.addEventListener("load", drawIcons);
-
-  function setupReveal() {
-    const nodes = document.querySelectorAll(".reveal:not(.is-visible)");
-    if (!("IntersectionObserver" in window)) {
-      nodes.forEach((n) => n.classList.add("is-visible"));
-      return;
-    }
-    revealObserver = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (!entry.isIntersecting) return;
-        entry.target.classList.add("is-visible");
-        revealObserver.unobserve(entry.target);
-      });
-    }, { rootMargin: "0px 0px -8% 0px", threshold: 0.08 });
-    nodes.forEach((n) => revealObserver.observe(n));
-  }
-
-  function setupActiveNav(active) {
-    const anchors = Array.prototype.slice.call(document.querySelectorAll("#nav-links a, #mobile-links a"));
-    const targets = active.map((s) => document.getElementById(s.id)).filter(Boolean);
-    if (!("IntersectionObserver" in window) || !targets.length) return;
-
-    const ratios = {};
-    sectionObserver = new IntersectionObserver(function (entries) {
-      entries.forEach((e) => { ratios[e.target.id] = e.isIntersecting ? e.intersectionRatio : 0; });
-      let best = null, bestRatio = 0;
-      Object.keys(ratios).forEach((id) => { if (ratios[id] > bestRatio) { bestRatio = ratios[id]; best = id; } });
-      anchors.forEach((a) => a.classList.toggle("is-active", !!best && a.getAttribute("href") === "#" + best));
-    }, { rootMargin: "-45% 0px -45% 0px", threshold: [0, 0.25, 0.5, 1] });
-    targets.forEach((t) => sectionObserver.observe(t));
-  }
-
-  // Theme toggle: in-memory only, nothing persisted
-  document.getElementById("theme-toggle").addEventListener("click", function () {
-    setMode(themeMode === "dark" ? "light" : "dark");
-  });
-
-  // Mobile menu
-  const menuBtn = document.getElementById("menu-toggle");
-  const mobileMenu = document.getElementById("mobile-menu");
-  function closeMenu() {
-    mobileMenu.classList.remove("is-open");
-    menuBtn.setAttribute("aria-expanded", "false");
-    menuBtn.setAttribute("aria-label", "Open navigation menu");
-  }
-  menuBtn.addEventListener("click", function () {
-    const open = mobileMenu.classList.toggle("is-open");
-    menuBtn.setAttribute("aria-expanded", String(open));
-    menuBtn.setAttribute("aria-label", open ? "Close navigation menu" : "Open navigation menu");
-  });
-  mobileMenu.addEventListener("click", function (e) { if (e.target.closest("a")) closeMenu(); });
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && mobileMenu.classList.contains("is-open")) { closeMenu(); menuBtn.focus(); }
-  });
-
-  // Header border once scrolled
-  const header = document.getElementById("site-header");
-  function onScroll() { header.classList.toggle("is-stuck", window.scrollY > 8); }
-  window.addEventListener("scroll", onScroll, { passive: true });
-  onScroll();
-
-  // Ctrl+P / ⌘P bypasses the dialog, so make sure there's something to print.
-  window.addEventListener("beforeprint", function () {
-    if (!printRoot.firstChild) buildPrintDoc(pdfChoice.template, pdfChoice.paper);
-  });
-
-  /* ====================================================================
-     13. GO
-     ==================================================================== */
-  applyCurrentTheme();          // default theme paints the skeleton correctly
-
-  if (PREVIEW) {
-    window.addEventListener("message", onPreviewMessage);
-    window.parent.postMessage({ type: "portfolio:preview-ready" }, "*");
-    loadStatus.textContent = "Waiting for preview data…";
-  } else {
-    load();
-  }
-})();
-</script>
+<!-- Filled on demand for printing and for the admin's resume preview. -->
+<div id="resume-root" aria-hidden="true"></div>
+
+<script src="js/core.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/themes.js"></script>
+<script src="js/layouts.js"></script>
+<script src="js/resume.js"></script>
+<script src="js/render.js"></script>
+<script src="js/site.js"></script>
 </body>
 </html>

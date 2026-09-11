@@ -16,9 +16,8 @@
 
 <style>
 /* ══════════════════════════════════════════════════════════════════════
-   THEME TOKENS — same defaults as index.html. The editor normally keeps
-   this fixed look; tick "Preview theme in this editor" on the Theme tab
-   to apply the theme you're building here too.
+   THEME TOKENS — same defaults as index.html. The editor keeps this fixed
+   look unless you tick "Preview theme in this editor" on the Theme tab.
    ══════════════════════════════════════════════════════════════════════ */
 :root {
   --accent:        #5cc8a8;
@@ -53,7 +52,7 @@
   --h-weight:     600;
   --h-tracking:   -0.02em;
 
-  --maxw:        1280px;
+  --maxw:        1320px;
   --radius:      14px;
   --radius-sm:   8px;
   --chip-radius: 6px;
@@ -167,10 +166,7 @@ img { max-width: 100%; display: block; }
 
 /* ── Connect screen ─────────────────────────────────────────────────── */
 .connect { padding: clamp(2.5rem, 8vw, 5rem) 0; }
-.connect-card {
-  max-width: 560px; border: 1px solid var(--border); border-radius: var(--radius);
-  background: var(--surface); padding: clamp(1.5rem, 4vw, 2.2rem);
-}
+.connect-card { max-width: 560px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: clamp(1.5rem, 4vw, 2.2rem); }
 .connect-card h1 { margin-bottom: .4rem; }
 .connect-card > p { color: var(--text-dim); font-size: .92rem; }
 .eyebrow {
@@ -186,17 +182,19 @@ img { max-width: 100%; display: block; }
   font-family: var(--font-mono); font-size: .72rem; text-transform: uppercase;
   letter-spacing: .07em; color: var(--text-dim);
 }
-.field .hint { font-size: .75rem; color: var(--text-dim); }
+.field .hint, .hint { font-size: .75rem; color: var(--text-dim); }
 .field input[type="text"], .field input[type="password"], .field input[type="month"],
-.field input[type="number"], .field textarea, .field select {
+.field input[type="number"], .field textarea, .field select,
+.icon-body input[type="text"], .icon-body textarea, .icon-body select {
   width: 100%; padding: .55rem .7rem;
   background: var(--bg); color: var(--text);
   border: 1px solid var(--border); border-radius: 6px;
   font-family: var(--font-body); font-size: .9rem; line-height: 1.55;
   transition: border-color .2s var(--ease);
 }
-.field input:focus, .field textarea:focus, .field select:focus { border-color: var(--accent); outline: none; }
-.field textarea { resize: vertical; min-height: 4.5rem; }
+.field input:focus, .field textarea:focus, .field select:focus,
+.icon-body input:focus, .icon-body textarea:focus { border-color: var(--accent); outline: none; }
+.field textarea, .icon-body textarea { resize: vertical; min-height: 4.5rem; }
 .field.mono input { font-family: var(--font-mono); font-size: .82rem; }
 .field-inline { display: flex; align-items: center; gap: .55rem; margin-bottom: .9rem; }
 .field-inline label { font-family: var(--font-mono); font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; color: var(--text-dim); }
@@ -205,25 +203,16 @@ img { max-width: 100%; display: block; }
 @media (min-width: 620px) { .field-grid.cols-2 { grid-template-columns: 1fr 1fr; } }
 
 /* ── Tag input ──────────────────────────────────────────────────────── */
-.tag-box {
-  display: flex; flex-wrap: wrap; gap: .35rem; align-items: center;
-  padding: .4rem .45rem; background: var(--bg);
-  border: 1px solid var(--border); border-radius: 6px;
-}
+.tag-box { display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; padding: .4rem .45rem; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; }
 .tag-box:focus-within { border-color: var(--accent); }
-.tag {
-  display: inline-flex; align-items: center; gap: .35rem;
-  font-family: var(--font-mono); font-size: .76rem;
-  padding: .22rem .3rem .22rem .5rem; border-radius: 5px;
-  background: var(--surface-2); border: 1px solid var(--border); color: var(--text-mid);
-}
+.tag { display: inline-flex; align-items: center; gap: .35rem; font-family: var(--font-mono); font-size: .76rem; padding: .22rem .3rem .22rem .5rem; border-radius: 5px; background: var(--surface-2); border: 1px solid var(--border); color: var(--text-mid); }
 .tag button { border: 0; background: none; color: var(--text-dim); cursor: pointer; font-size: .9rem; line-height: 1; padding: 0 .1rem; border-radius: 3px; }
 .tag button:hover { color: var(--danger); }
 .tag-box input { flex: 1; min-width: 9rem; border: 0; background: none; color: var(--text); font-family: var(--font-body); font-size: .85rem; padding: .2rem .25rem; }
 .tag-box input:focus { outline: none; }
 
-/* ── Image field ────────────────────────────────────────────────────── */
-.img-field { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: .7rem; background: var(--bg); }
+/* ── Image + icon fields ────────────────────────────────────────────── */
+.img-field, .icon-field { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: .7rem; background: var(--bg); }
 .img-row { display: flex; gap: .8rem; align-items: flex-start; }
 .img-thumb {
   width: 72px; height: 72px; flex: none; border-radius: 6px; overflow: hidden;
@@ -237,6 +226,19 @@ img { max-width: 100%; display: block; }
 .img-status { font-size: .76rem; margin: .4rem 0 0; min-height: 1.1em; }
 .img-status.ok { color: var(--accent); }
 .img-status.err { color: var(--danger); }
+
+.icon-head { display: flex; align-items: center; gap: .7rem; margin-bottom: .6rem; }
+.icon-head select { flex: 1; }
+.icon-preview {
+  width: 40px; height: 40px; flex: none; display: grid; place-items: center;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--surface-2); color: var(--accent); font-size: 1.3rem;
+}
+.icon-preview .icon { width: 1.35rem; height: 1.35rem; }
+.icon-preview img.icon { object-fit: contain; }
+.icon-none { color: var(--text-dim); font-size: .9rem; }
+.icon-body { display: grid; gap: .4rem; }
+.icon-body .btn { justify-self: start; }
 
 /* ── Repo bar ───────────────────────────────────────────────────────── */
 .repo-bar {
@@ -278,7 +280,7 @@ img { max-width: 100%; display: block; }
 .item-card.nested { background: var(--bg-alt); }
 
 .empty { border: 1px dashed var(--border-2); border-radius: var(--radius); padding: 1.1rem; text-align: center; font-size: .85rem; color: var(--text-dim); margin: 0 0 1rem; }
-.section-doc { font-size: .85rem; color: var(--text-dim); margin: -.4rem 0 1.1rem; max-width: 74ch; }
+.section-doc { font-size: .85rem; color: var(--text-dim); margin: -.4rem 0 1.1rem; max-width: 78ch; }
 .panel-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .6rem; margin-bottom: .5rem; }
 .sub-head { font-family: var(--font-mono); font-size: .74rem; text-transform: uppercase; letter-spacing: .08em; color: var(--text-dim); margin: 2rem 0 .7rem; }
 
@@ -294,8 +296,15 @@ img { max-width: 100%; display: block; }
 .order-kind { font-family: var(--font-mono); font-size: .68rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .07em; }
 .order-fixed { opacity: .6; }
 
+.layout-legend { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: 1rem; }
+.legend-chip {
+  font-family: var(--font-mono); font-size: .74rem; padding: .25rem .6rem;
+  border: 1px solid var(--border); border-radius: var(--chip-radius);
+  background: var(--surface-2); color: var(--text-mid); cursor: help;
+}
+
 /* ── Theme builder ──────────────────────────────────────────────────── */
-.theme-gallery { display: grid; gap: .8rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 232px), 1fr)); margin-bottom: 1.5rem; }
+.theme-gallery { display: grid; gap: .8rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 224px), 1fr)); margin-bottom: 1.5rem; }
 .theme-card {
   text-align: left; cursor: pointer; padding: 0; overflow: hidden;
   border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface);
@@ -312,12 +321,10 @@ img { max-width: 100%; display: block; }
 .theme-body span { display: block; font-size: .76rem; color: var(--text-dim); margin-top: .15rem; }
 .theme-fonts { font-family: var(--font-mono); font-size: .68rem; color: var(--text-dim); margin-top: .45rem; }
 .theme-selected { font-family: var(--font-mono); font-size: .68rem; color: var(--accent); margin-top: .35rem; }
+.theme-bar { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; margin-bottom: 1.2rem; }
 
 .mode-switch { display: inline-flex; gap: .3rem; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: .2rem; }
-.mode-switch button {
-  border: 0; background: none; cursor: pointer; padding: .3rem .7rem; border-radius: 6px;
-  font-family: var(--font-mono); font-size: .76rem; color: var(--text-dim);
-}
+.mode-switch button { border: 0; background: none; cursor: pointer; padding: .3rem .7rem; border-radius: 6px; font-family: var(--font-mono); font-size: .76rem; color: var(--text-dim); }
 .mode-switch button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
 
 .var-group { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: 1rem 1.1rem .4rem; margin-bottom: .8rem; }
@@ -334,8 +341,22 @@ img { max-width: 100%; display: block; }
 .var-reset { border: 0; background: none; color: var(--warn); cursor: pointer; font-size: .95rem; line-height: 1; padding: 0 .2rem; }
 .var-reset[hidden] { display: none; }
 
-/* ── PDF tab ────────────────────────────────────────────────────────── */
-.pdf-grid { display: grid; gap: .8rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); margin-bottom: 1.5rem; }
+.anim-grid { display: grid; gap: .6rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 148px), 1fr)); margin-bottom: .8rem; }
+.anim-card {
+  cursor: pointer; text-align: left; font-family: inherit; color: inherit;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--bg); padding: .7rem .75rem;
+  transition: border-color .2s var(--ease);
+}
+.anim-card:hover { border-color: var(--border-2); }
+.anim-card[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.anim-demo { display: block; color: var(--accent); font-size: 1.3rem; margin-bottom: .3rem; }
+.anim-demo .icon { width: 1.3rem; height: 1.3rem; }
+.anim-card strong { display: block; color: var(--text); font-size: .84rem; }
+.anim-card span { display: block; font-size: .72rem; color: var(--text-dim); }
+
+/* ── Resume / export ────────────────────────────────────────────────── */
+.pdf-grid { display: grid; gap: .8rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 246px), 1fr)); margin-bottom: 1.5rem; }
 .pdf-card {
   text-align: left; cursor: pointer; font-family: inherit; color: inherit;
   border: 1px solid var(--border); border-radius: var(--radius);
@@ -350,6 +371,21 @@ img { max-width: 100%; display: block; }
   font-family: var(--font-mono); font-size: .58rem; line-height: 1.35; white-space: pre;
   color: var(--text-dim); background: var(--bg); border: 1px solid var(--border);
   border-radius: 6px; padding: .5rem .6rem; margin: .6rem 0 0; overflow: hidden;
+}
+.exclude-grid { display: grid; gap: 0 1rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 190px), 1fr)); }
+.export-grid { display: grid; gap: .7rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 236px), 1fr)); }
+.export-card {
+  text-align: left; cursor: pointer; font-family: inherit; color: inherit;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface); padding: .85rem .95rem .95rem;
+  transition: border-color .2s var(--ease), transform .2s var(--ease);
+}
+.export-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.export-card strong { display: flex; align-items: center; gap: .5rem; color: var(--text); font-size: .92rem; margin-bottom: .25rem; }
+.export-card span { display: block; font-size: .78rem; color: var(--text-dim); }
+.export-ext {
+  font-family: var(--font-mono); font-size: .68rem; color: var(--accent);
+  border: 1px solid var(--accent); border-radius: 4px; padding: .05rem .3rem;
 }
 
 /* ── Save bar ───────────────────────────────────────────────────────── */
@@ -368,7 +404,7 @@ img { max-width: 100%; display: block; }
 .save-msg.err { color: var(--danger); }
 .save-msg.warn { color: var(--warn); }
 
-/* ── Validation panel ───────────────────────────────────────────────── */
+/* ── Validation ─────────────────────────────────────────────────────── */
 .problems { border: 1px solid var(--border); border-left: 3px solid var(--danger); border-radius: var(--radius); background: var(--surface); padding: 1rem 1.15rem; margin-bottom: 1.25rem; }
 .problems.only-warn { border-left-color: var(--warn); }
 .problems h2 { font-size: 1rem; margin-bottom: .5rem; color: var(--danger); }
@@ -387,9 +423,10 @@ img { max-width: 100%; display: block; }
 
 /* ── Preview ────────────────────────────────────────────────────────── */
 .preview-bar { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin-bottom: .9rem; }
-.preview-frame { width: 100%; height: min(74vh, 820px); border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); }
+.preview-frame { width: 100%; height: min(76vh, 900px); border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); }
 
 main { padding-bottom: 3rem; }
+.icon { width: 1em; height: 1em; flex: none; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
@@ -490,1619 +527,11 @@ main { padding-bottom: 3rem; }
   </div>
 </main>
 
-<script src="themes.js"></script>
-<script>
-(function () {
-  "use strict";
-
-  /* ====================================================================
-     STATE — TOKEN is a plain variable: it dies with the tab.
-     ==================================================================== */
-  let TOKEN = null;
-  let repo = { owner: "", name: "", branch: "main", path: "data.json" };
-  let sha = null;
-  let data = normalise({});
-  let savedSnapshot = "";
-  let activeTab = "profile";
-  let previewReady = false;
-  let previewView = "site";
-  let editMode = "dark";          // which theme mode the builder edits
-  let applyThemeHere = false;     // mirror the theme onto the editor chrome
-
-  const API = "https://api.github.com";
-  const ASSET_DIR = "assets";
-  const MAX_IMAGE_DIM = 1600;
-  const TH = window.PortfolioThemes || null;
-
-  function normalise(raw) {
-    const d = raw && typeof raw === "object" ? raw : {};
-    const t = d.theme && typeof d.theme === "object" ? d.theme : {};
-    const tv = t.vars && typeof t.vars === "object" ? t.vars : {};
-    const p = d.pdf && typeof d.pdf === "object" ? d.pdf : {};
-    const obj = (v) => (v && typeof v === "object" && !Array.isArray(v) ? v : {});
-    const list = (v) => (Array.isArray(v) ? v : []);
-    // Key order here becomes the key order in the committed file.
-    return {
-      theme: {
-        preset: typeof t.preset === "string" && t.preset ? t.preset : "graphite",
-        mode: t.mode === "light" ? "light" : "dark",
-        fonts: obj(t.fonts),
-        vars: { common: obj(tv.common), dark: obj(tv.dark), light: obj(tv.light) },
-        templates: list(t.templates)
-      },
-      pdf: {
-        template: typeof p.template === "string" && p.template ? p.template : "compact",
-        paper: p.paper === "letter" ? "letter" : "a4",
-        exclude: list(p.exclude)
-      },
-      sectionOrder: list(d.sectionOrder),
-      hiddenSections: list(d.hiddenSections),
-      sections: list(d.sections),
-      profile: obj(d.profile),
-      experience: list(d.experience),
-      projects: list(d.projects),
-      skills: list(d.skills),
-      certifications: list(d.certifications),
-      education: list(d.education)
-    };
-  }
-
-  const serialise = () => JSON.stringify(data, null, 2) + "\n";
-  const isDirty = () => serialise() !== savedSnapshot;
-
-  function has(v) {
-    if (v == null || v === false) return false;
-    if (Array.isArray(v)) return v.length > 0;
-    if (typeof v === "object") return Object.keys(v).length > 0;
-    return String(v).trim() !== "";
-  }
-  const slug = (s) => String(s || "").toLowerCase().trim()
-    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "section";
-
-  /* ====================================================================
-     SCHEMA — drives content tabs, forms, key order and validation
-     ==================================================================== */
-  const LINK_FIELDS = [
-    { key: "label", label: "Label" },
-    { key: "url", label: "URL" },
-    { key: "icon", label: "Icon", hint: "Lucide icon name" }
-  ];
-
-  const ITEM_FIELDS = [
-    { key: "title", label: "Title", required: true },
-    { key: "subtitle", label: "Subtitle" },
-    { key: "meta", label: "Meta", hint: "Date or right-aligned label" },
-    { key: "body", label: "Body", type: "textarea", hint: "**text** renders bold" },
-    { key: "bullets", label: "Bullets", type: "lines", hint: "One per line" },
-    { key: "tags", label: "Tags", type: "tags" },
-    { key: "image", label: "Image", type: "image" },
-    { key: "links", label: "Links", type: "objectList", itemLabel: "link", fields: LINK_FIELDS }
-  ];
-
-  const SCHEMA = [
-    {
-      key: "profile", label: "Profile", kind: "object",
-      doc: "Feeds the hero, the about copy, the contact footer, the page title, the meta/Open Graph tags and the schema.org Person block.",
-      fields: [
-        { key: "name", label: "Full name", required: true },
-        { key: "shortName", label: "Short name", hint: "Nav brand and page title" },
-        { key: "title", label: "Job title" },
-        { key: "tagline", label: "Tagline", type: "textarea", hint: "{{years}} is replaced with computed experience" },
-        { key: "status", label: "Hero pill", hint: "Blank hides the pill" },
-        { key: "location", label: "Location", hint: "City, Country" },
-        { key: "email", label: "Email", check: "email" },
-        { key: "phone", label: "Phone" },
-        { key: "resumeUrl", label: "Resume URL" },
-        { key: "siteUrl", label: "Site URL", hint: "Canonical + Open Graph" },
-        { key: "ogImage", label: "OG image", hint: "Relative to siteUrl" },
-        { key: "photo", label: "Profile photo", type: "image" },
-        { key: "about", label: "About paragraphs", type: "lines", hint: "One paragraph per line" },
-        { key: "links", label: "Links", type: "objectList", itemLabel: "link", fields: LINK_FIELDS }
-      ]
-    },
-    {
-      key: "experience", label: "Experience", kind: "list", itemLabel: "role", idPrefix: "exp",
-      doc: "The site sorts these by start date, newest first — the order here only matters for ties.",
-      title: (it) => [it.role, it.company].filter(Boolean).join(" · ") || "New role",
-      fields: [
-        { key: "id", label: "ID", required: true, unique: true, mono: true, hint: "Stable identifier — must be unique" },
-        { key: "company", label: "Company", required: true },
-        { key: "role", label: "Role", required: true },
-        { key: "startDate", label: "Start", type: "month", required: true, hint: "YYYY-MM" },
-        { key: "endDate", label: "End", type: "month", nullWhenEmpty: true, hint: "Blank = Present" },
-        { key: "location", label: "Location" },
-        { key: "summary", label: "Summary", type: "textarea" },
-        { key: "highlights", label: "Highlights", type: "lines", hint: "One bullet per line · **text** renders bold" },
-        { key: "tech", label: "Tech", type: "tags" }
-      ]
-    },
-    {
-      key: "projects", label: "Projects", kind: "list", itemLabel: "project", idPrefix: "proj",
-      doc: "Featured projects render first and double-width. The filter buttons on the site are the union of every tech tag here.",
-      title: (it) => it.title || "New project",
-      fields: [
-        { key: "id", label: "ID", required: true, unique: true, mono: true },
-        { key: "title", label: "Title", required: true },
-        { key: "featured", label: "Featured", type: "bool" },
-        { key: "image", label: "Cover image", type: "image" },
-        { key: "blurb", label: "Blurb", type: "textarea" },
-        { key: "problem", label: "Problem", type: "textarea" },
-        { key: "approach", label: "Approach", type: "textarea" },
-        { key: "result", label: "Result", type: "textarea" },
-        { key: "tech", label: "Tech", type: "tags" },
-        { key: "links", label: "Links", type: "objectList", itemLabel: "link", fields: LINK_FIELDS }
-      ]
-    },
-    {
-      key: "skills", label: "Skills", kind: "list", itemLabel: "category",
-      doc: "One card per category, in this order. Nothing about the categories is hardcoded on the site.",
-      title: (it) => it.category || "New category",
-      fields: [
-        { key: "category", label: "Category", required: true },
-        { key: "icon", label: "Icon", hint: "Lucide icon name, e.g. code-2" },
-        { key: "items", label: "Items", type: "tags" }
-      ]
-    },
-    {
-      key: "certifications", label: "Certifications", kind: "list", itemLabel: "certification",
-      doc: "Empty this list and the section plus its nav link disappear from the site.",
-      title: (it) => it.name || "New certification",
-      fields: [
-        { key: "name", label: "Name", required: true },
-        { key: "abbr", label: "Short code", hint: "e.g. CSA" },
-        { key: "issuer", label: "Issuer" },
-        { key: "year", label: "Year", type: "year" },
-        { key: "credentialUrl", label: "Credential URL", hint: "Adds a Verify link" }
-      ]
-    },
-    {
-      key: "education", label: "Education", kind: "list", itemLabel: "qualification",
-      doc: "Sorted by start year, newest first.",
-      title: (it) => it.degree || it.institution || "New qualification",
-      fields: [
-        { key: "degree", label: "Degree", required: true },
-        { key: "institution", label: "Institution", required: true },
-        { key: "startYear", label: "Start year", type: "year", hint: "YYYY" },
-        { key: "endYear", label: "End year", type: "year", nullWhenEmpty: true, hint: "Blank = Present" },
-        { key: "detail", label: "Detail", hint: "e.g. CGPA 9.47 / 10" }
-      ]
-    }
-  ];
-
-  const CUSTOM_SECTION_FIELDS = [
-    { key: "id", label: "Anchor id", mono: true, hint: "Used in the URL as #id — leave blank to derive from the title" },
-    { key: "title", label: "Title", required: true },
-    { key: "eyebrow", label: "Eyebrow", hint: "Small label above the title" },
-    { key: "blurb", label: "Intro", type: "textarea" },
-    { key: "layout", label: "Layout", type: "select", optionsFrom: "layouts" },
-    { key: "altBackground", label: "Alternate background", type: "bool" },
-    { key: "items", label: "Items", type: "objectList", itemLabel: "item", fields: ITEM_FIELDS }
-  ];
-
-  const TABS = SCHEMA.concat([
-    { key: "sections", label: "Sections", kind: "sections" },
-    { key: "theme", label: "Theme", kind: "theme" },
-    { key: "pdf", label: "PDF", kind: "pdf" },
-    { key: "preview", label: "Preview", kind: "preview" }
-  ]);
-
-  /* ====================================================================
-     DOM HELPER
-     ==================================================================== */
-  function el(tag, attrs) {
-    const node = document.createElement(tag);
-    if (attrs) {
-      Object.keys(attrs).forEach(function (k) {
-        const v = attrs[k];
-        if (v == null || v === false) return;
-        if (k === "class") node.className = v;
-        else if (k === "text") node.textContent = v;
-        else if (k.slice(0, 2) === "on" && typeof v === "function") node.addEventListener(k.slice(2).toLowerCase(), v);
-        else node.setAttribute(k, v === true ? "" : v);
-      });
-    }
-    Array.prototype.slice.call(arguments, 2).forEach(function add(child) {
-      if (child == null || child === false || child === "") return;
-      if (Array.isArray(child)) return child.forEach(add);
-      node.appendChild(child.nodeType ? child : document.createTextNode(String(child)));
-    });
-    return node;
-  }
-  const clear = (n) => { while (n.firstChild) n.removeChild(n.firstChild); };
-  let uidN = 0;
-  const uid = () => "f" + (++uidN);
-
-  /* ====================================================================
-     BASE64 (UTF-8 safe, chunked so big images don't blow the stack)
-     ==================================================================== */
-  function toBase64(str) {
-    return bytesToBase64(new TextEncoder().encode(str));
-  }
-  function bytesToBase64(bytes) {
-    let bin = "";
-    const CHUNK = 0x8000;
-    for (let i = 0; i < bytes.length; i += CHUNK) {
-      bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
-    }
-    return btoa(bin);
-  }
-  function fromBase64(b64) {
-    const bin = atob(String(b64).replace(/\s/g, ""));
-    const bytes = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-    return new TextDecoder().decode(bytes);
-  }
-
-  /* ====================================================================
-     GITHUB API
-     ==================================================================== */
-  function ghHeaders() {
-    return {
-      "Authorization": "Bearer " + TOKEN,
-      "Accept": "application/vnd.github+json",
-      "X-GitHub-Api-Version": "2022-11-28"
-    };
-  }
-  const contentsUrl = (path) =>
-    API + "/repos/" + encodeURIComponent(repo.owner) + "/" + encodeURIComponent(repo.name) +
-    "/contents/" + String(path).split("/").map(encodeURIComponent).join("/");
-
-  function describeHttpError(status, body) {
-    const msg = (body && body.message) || "";
-    if (status === 401) return "401 — the token was rejected. Check you pasted it whole and that it hasn't expired.";
-    if (status === 403) return "403 — the token is valid but not allowed here. Give it Contents: Read and write on this repository. (" + msg + ")";
-    if (status === 404) return "404 — no such repo, branch or file for this token. Check owner/repo/branch/path, and that the token can see this repository.";
-    if (status === 409) return "409 — the file changed on GitHub since you loaded it.";
-    if (status === 422) return "422 — GitHub rejected the write. " + msg;
-    return status + " — " + (msg || "unexpected response from GitHub.");
-  }
-
-  function ghFetch(url, options) {
-    return fetch(url, options).then(function (res) {
-      return res.text().then(function (body) {
-        let json = null;
-        try { json = body ? JSON.parse(body) : null; } catch (e) { /* non-JSON error page */ }
-        return { ok: res.ok, status: res.status, json: json, raw: body };
-      });
-    });
-  }
-
-  function fetchFile() {
-    const url = contentsUrl(repo.path) + "?ref=" + encodeURIComponent(repo.branch) + "&t=" + Date.now();
-    return ghFetch(url, { headers: ghHeaders(), cache: "no-store" }).then(function (res) {
-      if (!res.ok) throw new Error(describeHttpError(res.status, res.json));
-      if (!res.json || typeof res.json.content !== "string" || res.json.content === "") {
-        throw new Error("GitHub returned no file content — is " + repo.path + " a file (not a folder), and under 1 MB?");
-      }
-      let parsed;
-      try { parsed = JSON.parse(fromBase64(res.json.content)); }
-      catch (e) { throw new Error(repo.path + " is not valid JSON — " + e.message); }
-      return { data: normalise(parsed), sha: res.json.sha };
-    });
-  }
-
-  function putFile(path, message, base64, currentSha) {
-    const body = { message: message, content: base64, branch: repo.branch };
-    if (currentSha) body.sha = currentSha;
-    return ghFetch(contentsUrl(path), {
-      method: "PUT",
-      headers: Object.assign({ "Content-Type": "application/json" }, ghHeaders()),
-      body: JSON.stringify(body)
-    });
-  }
-
-  /* Look up an existing file's sha (needed to overwrite). null if absent. */
-  function shaOf(path) {
-    return ghFetch(contentsUrl(path) + "?ref=" + encodeURIComponent(repo.branch), { headers: ghHeaders() })
-      .then(function (res) { return res.ok && res.json ? res.json.sha : null; })
-      .catch(function () { return null; });
-  }
-
-  /* ====================================================================
-     IMAGE UPLOAD
-     Downscaled in-browser first, so an 8 MB phone photo doesn't end up in
-     git history forever. SVGs pass through untouched.
-     ==================================================================== */
-  function safeName(name, ext) {
-    const base = String(name || "image").replace(/\.[^.]+$/, "")
-      .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48) || "image";
-    return base + "." + ext;
-  }
-
-  function processImage(file) {
-    return new Promise(function (resolve, reject) {
-      const isVector = /svg/i.test(file.type) || /\.svg$/i.test(file.name);
-      const isGif = /gif/i.test(file.type);
-      if (isVector || isGif) return resolve({ blob: file, name: safeName(file.name, isVector ? "svg" : "gif") });
-
-      const canvas = document.createElement("canvas");
-      let ctx = null;
-      try { ctx = canvas.getContext ? canvas.getContext("2d") : null; } catch (e) { ctx = null; }
-      if (!ctx || typeof canvas.toBlob !== "function" || !window.URL || !window.URL.createObjectURL) {
-        // No usable canvas — upload the original rather than failing.
-        return resolve({ blob: file, name: safeName(file.name, (file.name.split(".").pop() || "png").toLowerCase()) });
-      }
-
-      const img = new Image();
-      const url = URL.createObjectURL(file);
-      img.onload = function () {
-        URL.revokeObjectURL(url);
-        const longest = Math.max(img.naturalWidth || img.width, img.naturalHeight || img.height);
-        const scale = Math.min(1, MAX_IMAGE_DIM / (longest || 1));
-        if (scale === 1 && file.size < 250 * 1024) {
-          return resolve({ blob: file, name: safeName(file.name, (file.name.split(".").pop() || "png").toLowerCase()) });
-        }
-        canvas.width = Math.max(1, Math.round((img.naturalWidth || img.width) * scale));
-        canvas.height = Math.max(1, Math.round((img.naturalHeight || img.height) * scale));
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob(function (blob) {
-          if (blob) resolve({ blob: blob, name: safeName(file.name, "webp") });
-          else canvas.toBlob(function (jpg) {
-            if (jpg) resolve({ blob: jpg, name: safeName(file.name, "jpg") });
-            else reject(new Error("The browser couldn't re-encode that image."));
-          }, "image/jpeg", 0.85);
-        }, "image/webp", 0.85);
-      };
-      img.onerror = function () {
-        URL.revokeObjectURL(url);
-        reject(new Error("That doesn't look like an image the browser can read."));
-      };
-      img.src = url;
-    });
-  }
-
-  function uploadAsset(file, status) {
-    if (!TOKEN) return Promise.reject(new Error("Connect to the repository first."));
-    status("Preparing " + file.name + "…", "");
-
-    return processImage(file).then(function (out) {
-      if (out.blob.size > 1.5 * 1024 * 1024) {
-        throw new Error("Still " + Math.round(out.blob.size / 1024) + " KB after resizing. Try a smaller image.");
-      }
-      const path = ASSET_DIR + "/" + out.name;
-      status("Uploading " + path + " (" + Math.round(out.blob.size / 1024) + " KB)…", "");
-
-      return out.blob.arrayBuffer()
-        .then(function (buf) { return bytesToBase64(new Uint8Array(buf)); })
-        .then(function (b64) {
-          return shaOf(path).then(function (existing) {
-            return putFile(path, (existing ? "Replace " : "Upload ") + path, b64, existing);
-          });
-        })
-        .then(function (res) {
-          if (!res.ok) throw new Error(describeHttpError(res.status, res.json));
-          return path;
-        });
-    });
-  }
-
-  /* ====================================================================
-     FIELD CONTROLS
-     ==================================================================== */
-  function readValue(obj, f) {
-    const v = obj[f.key];
-    if (f.type === "lines" || f.type === "tags") return Array.isArray(v) ? v : [];
-    if (f.type === "bool") return v === true;
-    return v == null ? "" : String(v);
-  }
-
-  function writeValue(obj, f, raw) {
-    if (f.type === "lines") obj[f.key] = String(raw).split("\n").map((s) => s.trim()).filter(Boolean);
-    else if (f.type === "bool") obj[f.key] = raw === true;
-    else {
-      const s = String(raw).trim();
-      obj[f.key] = s === "" && f.nullWhenEmpty ? null : s;
-    }
-    touched();
-  }
-
-  function tagInput(obj, f) {
-    const box = el("div", { class: "tag-box" });
-    const input = el("input", { type: "text", id: uid(), placeholder: "Type and press Enter", "aria-label": "Add to " + (f.label || f.key) });
-
-    function draw() {
-      clear(box);
-      readValue(obj, f).forEach(function (tag, i) {
-        box.appendChild(el("span", { class: "tag" }, tag,
-          el("button", { type: "button", "aria-label": "Remove " + tag, text: "×",
-            onclick: function () { obj[f.key].splice(i, 1); touched(); draw(); input.focus(); } })));
-      });
-      box.appendChild(input);
-    }
-    function commit() {
-      const parts = input.value.split(",").map((s) => s.trim()).filter(Boolean);
-      if (!parts.length) return;
-      if (!Array.isArray(obj[f.key])) obj[f.key] = [];
-      parts.forEach(function (p) { if (obj[f.key].indexOf(p) === -1) obj[f.key].push(p); });
-      input.value = "";
-      touched(); draw(); input.focus();
-    }
-    input.addEventListener("keydown", function (e) {
-      if (e.key === "Enter" || e.key === ",") { e.preventDefault(); commit(); }
-      else if (e.key === "Backspace" && input.value === "" && (obj[f.key] || []).length) {
-        obj[f.key].pop(); touched(); draw(); input.focus();
-      }
-    });
-    input.addEventListener("blur", commit);
-
-    draw();
-    return el("div", { class: "field" },
-      el("label", { for: input.id, text: f.label || f.key }), box,
-      f.hint && el("span", { class: "hint", text: f.hint }));
-  }
-
-  function imageField(obj, f) {
-    /* Deliberately does NOT write an empty { src, alt } into the data just
-       for being rendered — building a form must never dirty the file. The
-       key appears only once there's an actual image. */
-    const stored = obj[f.key];
-    const val = (stored && typeof stored === "object" && !Array.isArray(stored))
-      ? { src: stored.src || "", alt: stored.alt || "" }
-      : { src: typeof stored === "string" ? stored : "", alt: "" };
-
-    function commitVal() {
-      if (has(val.src)) obj[f.key] = { src: val.src, alt: val.alt || "" };
-      else delete obj[f.key];
-      touched();
-    }
-    const thumb = el("span", { class: "img-thumb" });
-    const pathLine = el("p", { class: "img-path" });
-    const status = el("p", { class: "img-status", role: "status", "aria-live": "polite" });
-    const fileInput = el("input", { type: "file", accept: "image/*", class: "visually-hidden", id: uid() });
-    const altId = uid();
-    const altInput = el("input", { type: "text", id: altId, placeholder: "Describe the image for screen readers" });
-    altInput.value = val.alt || "";
-    altInput.addEventListener("input", function () { val.alt = altInput.value; commitVal(); });
-
-    function say(msg, kind) { status.textContent = msg || ""; status.className = "img-status" + (kind ? " " + kind : ""); }
-
-    function draw() {
-      clear(thumb);
-      if (has(val.src)) {
-        thumb.appendChild(el("img", { src: val.src, alt: "" }));
-        pathLine.textContent = val.src;
-      } else {
-        thumb.appendChild(el("span", { text: "none" }));
-        pathLine.textContent = "No image set";
-      }
-    }
-
-    fileInput.addEventListener("change", function () {
-      const file = fileInput.files && fileInput.files[0];
-      if (!file) return;
-      uploadAsset(file, say).then(function (path) {
-        val.src = path;
-        commitVal(); draw();
-        say("Committed " + path + ". Add alt text below.", "ok");
-      }).catch(function (err) {
-        say(String(err.message || err), "err");
-      }).then(function () { fileInput.value = ""; });
-    });
-
-    draw();
-    return el("div", { class: "field" },
-      el("label", { for: fileInput.id, text: f.label || f.key }),
-      el("div", { class: "img-field" },
-        el("div", { class: "img-row" },
-          thumb,
-          el("div", { class: "img-side" },
-            pathLine,
-            el("div", { class: "img-buttons" },
-              el("label", { class: "btn btn-ghost btn-sm", for: fileInput.id }, "Upload…"),
-              fileInput,
-              el("button", { class: "btn btn-ghost btn-sm", type: "button",
-                onclick: function () { val.src = ""; val.alt = ""; altInput.value = ""; commitVal(); draw(); say("Cleared. The file stays in the repo.", ""); }
-              }, "Remove")))),
-        status,
-        el("div", { class: "field", style: "margin:.6rem 0 0" },
-          el("label", { for: altId, text: "Alt text" }), altInput)),
-      el("span", { class: "hint", text: "Resized to " + MAX_IMAGE_DIM + "px and committed to " + ASSET_DIR + "/ as its own commit." }));
-  }
-
-  function selectField(obj, f) {
-    const id = uid();
-    const opts = f.optionsFrom === "layouts"
-      ? ((TH && TH.SECTION_LAYOUTS) || []).map((l) => ({ value: l.id, label: l.name + " — " + l.blurb }))
-      : (f.options || []).map((o) => (typeof o === "string" ? { value: o, label: o } : o));
-    const sel = el("select", { id: id });
-    opts.forEach(function (o) { sel.appendChild(el("option", { value: o.value, text: o.label })); });
-    // Showing the default selection must not write it into the data.
-    sel.value = readValue(obj, f) || (opts[0] && opts[0].value) || "";
-    sel.addEventListener("change", function () { obj[f.key] = sel.value; touched(); });
-    return el("div", { class: "field" },
-      el("label", { for: id, text: f.label || f.key }), sel,
-      f.hint && el("span", { class: "hint", text: f.hint }));
-  }
-
-  function fieldRow(obj, f, onTitleChange) {
-    if (f.type === "tags") return tagInput(obj, f);
-    if (f.type === "image") return imageField(obj, f);
-    if (f.type === "select") return selectField(obj, f);
-
-    if (f.type === "objectList") {
-      if (!Array.isArray(obj[f.key])) obj[f.key] = [];
-      return el("div", { style: "margin-bottom:.9rem" },
-        el("p", { class: "sub-label", style: "margin:0 0 .4rem", text: f.label || f.key }),
-        listEditor(() => obj[f.key], {
-          fields: f.fields, itemLabel: f.itemLabel || "item", nested: true,
-          title: (it) => it.title || it.label || it.url || ("New " + (f.itemLabel || "item"))
-        }));
-    }
-
-    const id = uid();
-
-    if (f.type === "bool") {
-      const box = el("input", { type: "checkbox", id: id });
-      box.checked = readValue(obj, f) === true;
-      box.addEventListener("change", function () { writeValue(obj, f, box.checked); });
-      return el("div", { class: "field-inline" }, box, el("label", { for: id, text: f.label || f.key }));
-    }
-
-    const multiline = f.type === "textarea" || f.type === "lines";
-    let input;
-    if (multiline) {
-      input = el("textarea", { id: id, rows: f.type === "lines" ? 5 : 3 });
-      input.value = f.type === "lines" ? readValue(obj, f).join("\n") : readValue(obj, f);
-    } else if (f.type === "month") {
-      input = el("input", { type: "month", id: id, placeholder: "2026-05" });
-      input.value = readValue(obj, f);
-    } else {
-      input = el("input", { type: "text", id: id, placeholder: f.placeholder || null });
-      input.value = readValue(obj, f);
-    }
-
-    input.addEventListener("input", function () {
-      writeValue(obj, f, input.value);
-      if (onTitleChange) onTitleChange();
-    });
-
-    return el("div", { class: "field" + (f.mono ? " mono" : "") },
-      el("label", { for: id, text: (f.label || f.key) + (f.required ? " *" : "") }),
-      input,
-      f.hint && el("span", { class: "hint", text: f.hint }));
-  }
-
-  function fieldGroups(item, fields, retitle) {
-    const out = [];
-    let bucket = [];
-    const flush = function () {
-      if (!bucket.length) return;
-      out.push(el("div", { class: "field-grid cols-2" }, bucket));
-      bucket = [];
-    };
-    const WIDE = { textarea: 1, lines: 1, tags: 1, objectList: 1, image: 1, select: 1 };
-    fields.forEach(function (f) {
-      if (WIDE[f.type]) { flush(); out.push(fieldRow(item, f, retitle)); }
-      else bucket.push(fieldRow(item, f, retitle));
-    });
-    flush();
-    return out;
-  }
-
-  /* ====================================================================
-     LIST EDITOR — add / delete / drag-to-reorder (+ keyboard ↑ ↓)
-     ==================================================================== */
-  function blankItem(spec) {
-    const item = {};
-    spec.fields.forEach(function (f) {
-      if (f.type === "lines" || f.type === "tags" || f.type === "objectList") item[f.key] = [];
-      else if (f.type === "image") item[f.key] = { src: "", alt: "" };
-      else if (f.type !== "bool") item[f.key] = "";
-    });
-    if (spec.idPrefix && "id" in item) item.id = makeId(spec);
-    return item;
-  }
-
-  function makeId(spec) {
-    const list = spec.getList ? spec.getList() : [];
-    const used = {};
-    list.forEach((it) => { if (it && it.id) used[it.id] = true; });
-    let n = list.length + 1;
-    let candidate = spec.idPrefix + "-" + n;
-    while (used[candidate]) { n++; candidate = spec.idPrefix + "-" + n; }
-    return candidate;
-  }
-
-  function toolBtn(glyph, label, disabled, onClick, extraClass) {
-    return el("button", {
-      type: "button", class: "tool-btn" + (extraClass ? " " + extraClass : ""),
-      title: label, "aria-label": label, disabled: disabled || null,
-      onclick: onClick, text: glyph
-    });
-  }
-
-  /* Shared drag wiring: arms dragging only while the handle is held, so
-     text selection inside the inputs keeps working. */
-  function wireDrag(card, handle, host, state, onDrop) {
-    handle.addEventListener("mousedown", function () { card.draggable = true; });
-    handle.addEventListener("touchstart", function () { card.draggable = true; }, { passive: true });
-    handle.addEventListener("mouseup", function () { card.draggable = false; });
-    card.addEventListener("mousedown", function (e) {
-      if (!e.target.closest(".drag-handle")) card.draggable = false;
-    });
-    card.addEventListener("dragstart", function (e) {
-      state.dragging = true;
-      card.classList.add("is-dragging");
-      if (e.dataTransfer) { e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", card.dataset.index || ""); }
-    });
-    card.addEventListener("dragend", function () {
-      card.classList.remove("is-dragging");
-      card.draggable = false;
-      if (!state.dragging) return;
-      state.dragging = false;
-      onDrop();
-    });
-    card.addEventListener("dragover", function (e) {
-      if (!state.dragging) return;
-      e.preventDefault();
-      const dragged = host.querySelector(".is-dragging");
-      if (!dragged || dragged === card) return;
-      const box = card.getBoundingClientRect();
-      const after = (e.clientY - box.top) > box.height / 2;
-      host.insertBefore(dragged, after ? card.nextSibling : card);
-    });
-  }
-
-  function listEditor(getList, spec) {
-    spec.getList = getList;
-    const host = el("div", { class: "item-list" });
-    const wrapper = el("div", null, host);
-    const state = { dragging: false };
-
-    function reorderFromDom() {
-      const order = Array.prototype.slice.call(host.querySelectorAll(":scope > .item-card")).map((n) => +n.dataset.index);
-      const list = getList();
-      const next = order.map((i) => list[i]);
-      list.length = 0;
-      next.forEach((it) => list.push(it));
-      touched();
-      build();
-    }
-
-    function build(focusIndex) {
-      const list = getList();
-      clear(host);
-      if (!list.length) host.appendChild(el("p", { class: "empty", text: "No " + spec.itemLabel + "s yet." }));
-
-      list.forEach(function (item, i) {
-        const titleEl = el("h3", { class: "item-title", text: spec.title ? spec.title(item) : spec.itemLabel + " " + (i + 1) });
-        const retitle = spec.title ? function () { titleEl.textContent = spec.title(item); } : null;
-        const card = el("article", { class: "item-card" + (spec.nested ? " nested" : ""), "data-index": i });
-        const handle = toolBtn("⠿", "Drag to reorder " + (spec.title ? spec.title(item) : spec.itemLabel), false, null, "drag-handle");
-        wireDrag(card, handle, host, state, reorderFromDom);
-
-        card.appendChild(el("header", { class: "item-head" },
-          handle,
-          el("span", { class: "item-idx", text: String(i + 1).padStart(2, "0") }),
-          titleEl,
-          el("div", { class: "item-tools" },
-            toolBtn("↑", "Move up", i === 0, function () { swap(list, i, i - 1); touched(); build(i - 1); }),
-            toolBtn("↓", "Move down", i === list.length - 1, function () { swap(list, i, i + 1); touched(); build(i + 1); }),
-            toolBtn("✕", "Delete", false, function () {
-              if (!window.confirm("Delete this entry? It's removed from the editor — nothing is committed until you save.")) return;
-              list.splice(i, 1); touched(); build();
-            }, "danger"))));
-        card.appendChild(el("div", { class: "item-body" }, fieldGroups(item, spec.fields, retitle)));
-        host.appendChild(card);
-      });
-
-      if (typeof focusIndex === "number") {
-        const cards = host.querySelectorAll(":scope > .item-card");
-        const card = cards[Math.max(0, Math.min(focusIndex, cards.length - 1))];
-        const first = card && card.querySelector("input, textarea");
-        if (first) first.focus();
-      }
-      refreshCounts();
-    }
-
-    wrapper.appendChild(el("button", {
-      type: "button", class: "btn btn-ghost btn-block", text: "+ Add " + spec.itemLabel,
-      onclick: function () { getList().push(blankItem(spec)); touched(); build(getList().length - 1); }
-    }));
-
-    build();
-    return wrapper;
-  }
-
-  function swap(list, a, b) {
-    if (b < 0 || b >= list.length) return;
-    const t = list[a]; list[a] = list[b]; list[b] = t;
-  }
-
-  /* ====================================================================
-     SECTIONS TAB — order, visibility and custom sections
-     ==================================================================== */
-  function knownSections() {
-    const out = [];
-    const add = (id, label, kind) => out.push({ id: id, label: label, kind: kind });
-    if (has(data.profile.about)) add("about", "About", "built-in");
-    if (data.skills.length) add("skills", "Skills", "built-in");
-    if (data.experience.length) add("experience", "Experience", "built-in");
-    if (data.projects.length) add("projects", "Projects", "built-in");
-    if (data.certifications.length) add("certifications", "Certifications", "built-in");
-    if (data.education.length) add("education", "Education", "built-in");
-    const used = {};
-    out.forEach((s) => { used[s.id] = true; });
-    data.sections.forEach(function (sec) {
-      let id = slug(sec.id || sec.title);
-      while (used[id]) id = id + "-x";
-      used[id] = true;
-      add(id, sec.title || "Untitled section", "custom");
-    });
-    return out;
-  }
-
-  function orderedSections() {
-    const known = knownSections();
-    const order = data.sectionOrder.map(String);
-    return known
-      .map((s, i) => ({ s: s, i: i }))
-      .sort(function (a, b) {
-        const ra = order.indexOf(a.s.id), rb = order.indexOf(b.s.id);
-        return ((ra === -1 ? 9999 : ra) - (rb === -1 ? 9999 : rb)) || (a.i - b.i);
-      })
-      .map((x) => x.s);
-  }
-
-  function buildSectionsPanel(panel) {
-    clear(panel);
-    panel.appendChild(el("div", { class: "panel-head" }, el("h2", { text: "Sections" })));
-    panel.appendChild(el("p", { class: "section-doc", text:
-      "Drag to change the order sections appear on the site, or hide one without deleting its content. " +
-      "A section with no content never renders, whatever the order says. Contact is always the footer." }));
-
-    /* — order + visibility — */
-    const orderHost = el("div");
-    const state = { dragging: false };
-
-    function readOrderFromDom() {
-      data.sectionOrder = Array.prototype.slice.call(orderHost.querySelectorAll(":scope > .order-row"))
-        .map((n) => n.dataset.id);
-      touched();
-      drawOrder();
-    }
-
-    function drawOrder() {
-      clear(orderHost);
-      const list = orderedSections();
-      if (!list.length) {
-        orderHost.appendChild(el("p", { class: "empty", text: "No sections have content yet." }));
-        return;
-      }
-      list.forEach(function (s, i) {
-        const hidden = data.hiddenSections.indexOf(s.id) !== -1;
-        const row = el("div", { class: "order-row" + (hidden ? " is-hidden" : ""), "data-id": s.id, "data-index": i });
-        const handle = toolBtn("⠿", "Drag to reorder " + s.label, false, null, "drag-handle");
-        wireDrag(row, handle, orderHost, state, readOrderFromDom);
-        row.appendChild(handle);
-        row.appendChild(el("span", { class: "item-idx", text: String(i + 1).padStart(2, "0") }));
-        row.appendChild(el("span", { class: "order-name", text: s.label }));
-        row.appendChild(el("span", { class: "order-kind", text: s.kind }));
-        row.appendChild(el("div", { class: "item-tools" },
-          toolBtn("↑", "Move up", i === 0, function () { moveInOrder(s.id, -1); }),
-          toolBtn("↓", "Move down", i === list.length - 1, function () { moveInOrder(s.id, 1); }),
-          el("button", {
-            type: "button", class: "tool-btn", "aria-pressed": String(!hidden),
-            title: hidden ? "Show on the site" : "Hide from the site",
-            "aria-label": (hidden ? "Show " : "Hide ") + s.label,
-            text: hidden ? "🚫" : "👁",
-            onclick: function () {
-              const at = data.hiddenSections.indexOf(s.id);
-              if (at === -1) data.hiddenSections.push(s.id); else data.hiddenSections.splice(at, 1);
-              touched(); drawOrder();
-            }
-          })));
-        orderHost.appendChild(row);
-      });
-      orderHost.appendChild(el("div", { class: "order-row order-fixed" },
-        el("span", { class: "item-idx", text: "──" }),
-        el("span", { class: "order-name", text: "Contact" }),
-        el("span", { class: "order-kind", text: "footer · always last" })));
-    }
-
-    function moveInOrder(id, delta) {
-      const ids = orderedSections().map((s) => s.id);
-      const at = ids.indexOf(id);
-      if (at === -1) return;
-      const to = at + delta;
-      if (to < 0 || to >= ids.length) return;
-      const t = ids[at]; ids[at] = ids[to]; ids[to] = t;
-      data.sectionOrder = ids;
-      touched(); drawOrder();
-    }
-
-    drawOrder();
-    panel.appendChild(orderHost);
-
-    /* — custom sections — */
-    panel.appendChild(el("p", { class: "sub-head", text: "Custom sections" }));
-    panel.appendChild(el("p", { class: "section-doc", text:
-      "Anything the built-in sections don't cover: talks, publications, awards, volunteering, a gallery. " +
-      "Pick a layout and the site renders it — no markup to write." }));
-    panel.appendChild(listEditor(() => data.sections, {
-      fields: CUSTOM_SECTION_FIELDS,
-      itemLabel: "section",
-      title: (it) => it.title || "New section"
-    }));
-  }
-
-  /* ====================================================================
-     THEME TAB
-     ==================================================================== */
-  function resolvedTheme() {
-    return TH ? TH.resolveTheme(data.theme) : null;
-  }
-
-  function buildThemePanel(panel) {
-    clear(panel);
-    panel.appendChild(el("div", { class: "panel-head" }, el("h2", { text: "Theme" })));
-
-    if (!TH) {
-      panel.appendChild(el("p", { class: "notice err", text: "themes.js didn't load, so the theme builder is unavailable. Check that themes.js sits next to this page." }));
-      return;
-    }
-
-    panel.appendChild(el("p", { class: "section-doc", text:
-      "Pick a starting template, then tune anything. Every change is stored in data.json as a handful of CSS " +
-      "variables — the site reads them at load, so there's nothing to rebuild." }));
-
-    /* — preset gallery — */
-    const gallery = el("div", { class: "theme-gallery" });
-    function drawGallery() {
-      clear(gallery);
-      const all = data.theme.templates.concat(TH.THEMES);
-      all.forEach(function (t) {
-        const v = (t.vars && t.vars[editMode]) || {};
-        const isCustom = data.theme.templates.indexOf(t) !== -1;
-        const selected = data.theme.preset === t.id;
-        gallery.appendChild(el("button", {
-          type: "button", class: "theme-card", "aria-pressed": String(selected),
-          onclick: function () { choosePreset(t.id); }
-        },
-          el("span", { class: "theme-mock", style: "background:" + (v["--bg"] || "#111") },
-            el("span", { class: "m-bar", style: "width:62%;background:" + (v["--text"] || "#eee") }),
-            el("span", { class: "m-bar", style: "width:40%;background:" + (v["--text-dim"] || "#888") }),
-            el("span", { class: "m-chip", style: "background:" + (v["--accent"] || "#5cc8a8") })),
-          el("span", { class: "theme-body" },
-            el("strong", { text: t.name + (isCustom ? " (yours)" : "") }),
-            el("span", { text: t.blurb || "Custom template." }),
-            el("span", { class: "theme-fonts", text: [t.fonts && t.fonts.display, t.fonts && t.fonts.body].filter(Boolean).join(" / ") }),
-            selected ? el("span", { class: "theme-selected", text: "● selected" }) : null)
-        ));
-      });
-    }
-
-    function choosePreset(id) {
-      const hasTweaks = ["common", "dark", "light"].some((k) => Object.keys(data.theme.vars[k]).length) ||
-                        Object.keys(data.theme.fonts).length;
-      if (hasTweaks && !window.confirm("Switching template discards your colour, type and font tweaks. Continue?")) return;
-      data.theme.preset = id;
-      data.theme.vars = { common: {}, dark: {}, light: {} };
-      data.theme.fonts = {};
-      touched();
-      buildThemePanel(panel);
-    }
-
-    drawGallery();
-    panel.appendChild(gallery);
-
-    /* — mode + apply-here controls — */
-    const modeSwitch = el("div", { class: "mode-switch", role: "group", "aria-label": "Which mode you're editing" },
-      ["dark", "light"].map((m) => el("button", {
-        type: "button", "aria-pressed": String(editMode === m), text: m === "dark" ? "Dark" : "Light",
-        onclick: function () { editMode = m; data.theme.mode = m; touched(); buildThemePanel(panel); }
-      })));
-
-    const applyHere = el("input", { type: "checkbox", id: "apply-here" });
-    applyHere.checked = applyThemeHere;
-    applyHere.addEventListener("change", function () {
-      applyThemeHere = applyHere.checked;
-      if (applyThemeHere) applyThemeToEditor();
-      else resetEditorTheme();
-    });
-
-    panel.appendChild(el("div", { style: "display:flex;flex-wrap:wrap;gap:1rem;align-items:center;margin-bottom:1.2rem" },
-      el("span", { class: "sub-label", text: "Editing" }), modeSwitch,
-      el("span", { class: "field-inline", style: "margin:0" }, applyHere,
-        el("label", { for: "apply-here", text: "Preview theme in this editor" })),
-      el("span", { class: "spacer", style: "flex:1" }),
-      el("button", { class: "btn btn-ghost btn-sm", type: "button", onclick: function () {
-        if (!window.confirm("Reset every tweak back to the " + (TH.themeById(data.theme.preset, data.theme.templates).name) + " template?")) return;
-        data.theme.vars = { common: {}, dark: {}, light: {} };
-        data.theme.fonts = {};
-        touched(); buildThemePanel(panel);
-      } }, "Reset tweaks")));
-
-    /* — fonts — */
-    const resolved = resolvedTheme();
-    const fontGroup = el("div", { class: "var-group" }, el("h3", { text: "Fonts" }),
-      el("p", { text: "Loaded from Google Fonts at runtime. Only the three families you pick are requested." }));
-
-    [["display", "Headings"], ["body", "Body"], ["mono", "Mono / labels"]].forEach(function (pair) {
-      const role = pair[0];
-      const id = uid();
-      const sel = el("select", { id: id });
-      const kinds = { display: ["sans", "serif", "mono"], body: ["sans", "serif"], mono: ["mono"] }[role];
-      kinds.forEach(function (kind) {
-        const group = el("optgroup", { label: kind });
-        Object.keys(TH.FONTS).forEach(function (name) {
-          if (TH.FONTS[name].kind !== kind) return;
-          group.appendChild(el("option", { value: name, text: name }));
-        });
-        if (group.childNodes.length) sel.appendChild(group);
-      });
-      sel.value = resolved.fonts[role] || "";
-      sel.addEventListener("change", function () {
-        data.theme.fonts[role] = sel.value;
-        touched();
-        if (applyThemeHere) applyThemeToEditor();
-      });
-      const reset = el("button", {
-        class: "var-reset", type: "button", title: "Reset to the template's font", text: "↺",
-        hidden: !data.theme.fonts[role],
-        onclick: function () { delete data.theme.fonts[role]; touched(); buildThemePanel(panel); }
-      });
-      fontGroup.appendChild(el("div", { class: "var-row" },
-        el("label", { for: id, text: pair[1] }),
-        el("span", { class: "var-ctl" }, sel, reset)));
-    });
-    panel.appendChild(fontGroup);
-
-    /* — token groups — */
-    TH.VAR_GROUPS.forEach(function (group) {
-      const box = el("div", { class: "var-group" },
-        el("h3", { text: group.group + (group.scope === "mode" ? " · " + editMode : "") }),
-        group.note ? el("p", { text: group.note }) : null);
-
-      group.vars.forEach(function (spec) {
-        const scope = group.scope === "mode" ? editMode : "common";
-        const current = String(resolved.vars[scope][spec.key] != null ? resolved.vars[scope][spec.key] : "");
-        const overridden = Object.prototype.hasOwnProperty.call(data.theme.vars[scope], spec.key);
-        const id = uid();
-
-        function setVar(value) {
-          data.theme.vars[scope][spec.key] = value;
-          resetBtn.hidden = false;
-          touched();
-          if (applyThemeHere) applyThemeToEditor();
-        }
-
-        const resetBtn = el("button", {
-          class: "var-reset", type: "button", title: "Reset to the template value", text: "↺", hidden: !overridden,
-          onclick: function () { delete data.theme.vars[scope][spec.key]; touched(); buildThemePanel(panel); }
-        });
-
-        let control;
-        if (spec.type === "color") {
-          const swatch = el("input", { type: "color", id: id, "aria-label": spec.label + " colour picker" });
-          const hex = el("input", { type: "text", "aria-label": spec.label + " hex value", spellcheck: "false" });
-          const normal = /^#[0-9a-f]{6}$/i.test(current) ? current.toLowerCase() : "#000000";
-          swatch.value = normal; hex.value = current;
-          swatch.addEventListener("input", function () { hex.value = swatch.value; setVar(swatch.value); });
-          hex.addEventListener("input", function () {
-            const v = hex.value.trim();
-            if (/^#[0-9a-f]{3,8}$/i.test(v)) { swatch.value = /^#[0-9a-f]{6}$/i.test(v) ? v : swatch.value; setVar(v); }
-          });
-          control = el("span", { class: "var-ctl" }, swatch, hex, resetBtn);
-
-        } else if (spec.type === "px" || spec.type === "ratio" || spec.type === "em") {
-          const num = parseFloat(current) || 0;
-          const range = el("input", {
-            type: "range", id: id, min: spec.min, max: spec.max, step: spec.step,
-            "aria-label": spec.label
-          });
-          range.value = String(Math.min(spec.max, Math.max(spec.min, num)));
-          const unit = spec.type === "px" ? "px" : (spec.type === "em" ? "em" : "");
-          const out = el("output", { text: current });
-          range.addEventListener("input", function () {
-            const v = range.value + unit;
-            out.textContent = v;
-            setVar(v);
-          });
-          control = el("span", { class: "var-ctl" }, range, out, resetBtn);
-
-        } else if (spec.type === "select") {
-          const sel = el("select", { id: id, "aria-label": spec.label });
-          spec.options.forEach((o) => sel.appendChild(el("option", { value: o, text: o })));
-          sel.value = current;
-          sel.addEventListener("change", function () { setVar(sel.value); });
-          control = el("span", { class: "var-ctl" }, sel, resetBtn);
-
-        } else {
-          const text = el("input", { type: "text", id: id, "aria-label": spec.label, spellcheck: "false" });
-          text.value = current;
-          text.addEventListener("input", function () { setVar(text.value); });
-          control = el("span", { class: "var-ctl" }, text, resetBtn);
-        }
-
-        box.appendChild(el("div", { class: "var-row" }, el("label", { for: id, text: spec.label }), control));
-      });
-
-      panel.appendChild(box);
-    });
-
-    /* — save as template — */
-    const nameId = uid();
-    const nameInput = el("input", { type: "text", id: nameId, placeholder: "e.g. Chaitanya Dark" });
-    const saveTplMsg = el("p", { class: "save-msg", role: "status", "aria-live": "polite" });
-
-    panel.appendChild(el("div", { class: "var-group" },
-      el("h3", { text: "Save as a template" }),
-      el("p", { text: "Freezes the current look — colours, fonts, shape and type — as a reusable template stored in data.json." }),
-      el("div", { class: "var-row" },
-        el("label", { for: nameId, text: "Template name" }),
-        el("span", { class: "var-ctl" }, nameInput,
-          el("button", { class: "btn btn-ghost btn-sm", type: "button", onclick: function () {
-            const name = nameInput.value.trim();
-            if (!name) { saveTplMsg.textContent = "Give the template a name first."; saveTplMsg.className = "save-msg err"; return; }
-            const r = resolvedTheme();
-            let id = "custom-" + slug(name);
-            const taken = {};
-            data.theme.templates.concat(TH.THEMES).forEach((t) => { taken[t.id] = true; });
-            let n = 2; while (taken[id]) { id = "custom-" + slug(name) + "-" + n; n++; }
-            data.theme.templates.push({
-              id: id, name: name, blurb: "Your saved template.",
-              fonts: { display: r.fonts.display, body: r.fonts.body, mono: r.fonts.mono },
-              vars: { common: Object.assign({}, r.vars.common), dark: Object.assign({}, r.vars.dark), light: Object.assign({}, r.vars.light) }
-            });
-            data.theme.preset = id;
-            data.theme.vars = { common: {}, dark: {}, light: {} };
-            data.theme.fonts = {};
-            touched();
-            buildThemePanel(panel);
-          } }, "Save template"))),
-      saveTplMsg,
-      data.theme.templates.length
-        ? el("div", null, el("p", { class: "sub-label", style: "margin:.8rem 0 .4rem", text: "Your templates" }),
-            data.theme.templates.map(function (t, i) {
-              return el("div", { class: "order-row" },
-                el("span", { class: "order-name", text: t.name }),
-                el("span", { class: "order-kind", text: t.id }),
-                toolBtn("✕", "Delete template " + t.name, false, function () {
-                  if (!window.confirm("Delete the template “" + t.name + "”?")) return;
-                  data.theme.templates.splice(i, 1);
-                  if (data.theme.preset === t.id) data.theme.preset = "graphite";
-                  touched(); buildThemePanel(panel);
-                }, "danger"));
-            }))
-        : null
-    ));
-  }
-
-  function applyThemeToEditor() {
-    if (!TH) return;
-    TH.applyTheme(document, resolvedTheme(), editMode);
-    document.documentElement.setAttribute("data-theme", editMode);
-  }
-  function resetEditorTheme() {
-    const style = document.documentElement.style;
-    for (let i = style.length - 1; i >= 0; i--) {
-      const prop = style[i];
-      if (prop.indexOf("--") === 0) style.removeProperty(prop);
-    }
-    document.documentElement.setAttribute("data-theme", "dark");
-  }
-
-  /* ====================================================================
-     PDF TAB
-     ==================================================================== */
-  function buildPdfPanel(panel) {
-    clear(panel);
-    panel.appendChild(el("div", { class: "panel-head" }, el("h2", { text: "PDF" })));
-    panel.appendChild(el("p", { class: "section-doc", text:
-      "The site can re-lay-out your content as a resume and hand it to the browser's print dialog, where you " +
-      "choose “Save as PDF”. Real text, real links, real page breaks — no screenshotting. This sets the default " +
-      "layout; visitors can still pick another." }));
-
-    const templates = (TH && TH.PDF_TEMPLATES) || [];
-    const grid = el("div", { class: "pdf-grid" });
-    templates.forEach(function (t) {
-      grid.appendChild(el("button", {
-        type: "button", class: "pdf-card", "aria-pressed": String(data.pdf.template === t.id),
-        onclick: function () { data.pdf.template = t.id; touched(); buildPdfPanel(panel); if (activeTab === "pdf") sendPreview(); }
-      },
-        el("strong", { text: t.name }),
-        el("span", { text: t.blurb }),
-        t.sketch ? el("pre", { class: "pdf-sketch", text: t.sketch.join("\n") }) : null));
-    });
-    panel.appendChild(grid);
-
-    const paperId = uid();
-    const paper = el("select", { id: paperId });
-    [["a4", "A4 (210 × 297 mm)"], ["letter", "US Letter (8.5 × 11 in)"]].forEach(function (p) {
-      paper.appendChild(el("option", { value: p[0], text: p[1] }));
-    });
-    paper.value = data.pdf.paper;
-    paper.addEventListener("change", function () { data.pdf.paper = paper.value; touched(); });
-    panel.appendChild(el("div", { class: "field", style: "max-width:22rem" },
-      el("label", { for: paperId, text: "Paper size" }), paper));
-
-    panel.appendChild(el("p", { class: "sub-head", text: "Leave out of the PDF" }));
-    const secs = knownSections();
-    panel.appendChild(el("div", null, secs.length ? secs.map(function (s) {
-      const id = uid();
-      const box = el("input", { type: "checkbox", id: id });
-      box.checked = data.pdf.exclude.indexOf(s.id) !== -1;
-      box.addEventListener("change", function () {
-        const at = data.pdf.exclude.indexOf(s.id);
-        if (box.checked && at === -1) data.pdf.exclude.push(s.id);
-        if (!box.checked && at !== -1) data.pdf.exclude.splice(at, 1);
-        touched();
-      });
-      return el("div", { class: "field-inline" }, box, el("label", { for: id, text: s.label }));
-    }) : el("p", { class: "empty", text: "No sections with content yet." })));
-
-    panel.appendChild(el("button", {
-      class: "btn btn-ghost", type: "button",
-      onclick: function () { previewView = "print"; selectTab("preview"); }
-    }, "Open print preview →"));
-  }
-
-  /* ====================================================================
-     VALIDATION
-     ==================================================================== */
-  const MONTH_RE = /^\d{4}-(0[1-9]|1[0-2])$/;
-  const YEAR_RE = /^\d{4}$/;
-  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  function validate() {
-    const problems = [];
-    const add = (tab, where, message, level) =>
-      problems.push({ tab: tab, where: where, message: message, level: level || "error" });
-
-    try { JSON.stringify(data); }
-    catch (e) { add("profile", "data", "The content can't be serialised to JSON: " + e.message); return problems; }
-
-    SCHEMA.forEach(function (group) {
-      if (group.kind === "object") {
-        group.fields.forEach(function (f) {
-          const v = data[group.key][f.key];
-          if (f.type === "image") {
-            if (v && has(v.src) && !has(v.alt)) add(group.key, group.label + " › " + f.label, "has no alt text. Screen readers will skip it.", "warning");
-            return;
-          }
-          if (f.required && !String(v == null ? "" : v).trim()) add(group.key, group.label + " › " + f.label, "is required.");
-          if (f.check === "email" && String(v || "").trim() && !EMAIL_RE.test(String(v).trim()))
-            add(group.key, group.label + " › " + f.label, "doesn't look like an email address.");
-        });
-        return;
-      }
-
-      const seen = {};
-      data[group.key].forEach(function (item, i) {
-        const where = group.label + " #" + (i + 1);
-        group.fields.forEach(function (f) {
-          const v = item[f.key];
-          if (f.type === "image") {
-            if (v && has(v.src) && !has(v.alt)) add(group.key, where + " › " + f.label, "has no alt text.", "warning");
-            return;
-          }
-          const s = v == null ? "" : String(v).trim();
-          if (f.required && !s) add(group.key, where + " › " + f.label, "is required.");
-          if (f.unique && s) {
-            if (seen[s]) add(group.key, where + " › " + f.label, '"' + s + '" is already used by entry #' + seen[s] + ". IDs must be unique.");
-            else seen[s] = i + 1;
-          }
-          if (f.type === "month" && s && !MONTH_RE.test(s))
-            add(group.key, where + " › " + f.label, '"' + s + '" must be YYYY-MM (e.g. 2026-05).');
-          if (f.type === "year" && s && !YEAR_RE.test(s))
-            add(group.key, where + " › " + f.label, '"' + s + '" must be a 4-digit year.');
-        });
-        if (group.key === "experience" && item.startDate && item.endDate &&
-            MONTH_RE.test(String(item.startDate)) && MONTH_RE.test(String(item.endDate)) &&
-            String(item.endDate) < String(item.startDate)) {
-          add(group.key, where, "ends before it starts.");
-        }
-      });
-    });
-
-    /* custom sections */
-    const layoutIds = ((TH && TH.SECTION_LAYOUTS) || []).map((l) => l.id);
-    const sectionIds = {};
-    data.sections.forEach(function (sec, i) {
-      const where = "Section #" + (i + 1);
-      if (!has(sec.title)) add("sections", where + " › Title", "is required.");
-      const id = slug(sec.id || sec.title);
-      if (sectionIds[id]) add("sections", where + " › Anchor id", '"' + id + '" clashes with section #' + sectionIds[id] + ".");
-      else sectionIds[id] = i + 1;
-      if (has(sec.layout) && layoutIds.length && layoutIds.indexOf(sec.layout) === -1)
-        add("sections", where + " › Layout", '"' + sec.layout + '" is not a known layout.');
-      if (!Array.isArray(sec.items) || !sec.items.length)
-        add("sections", where, "has no items, so it won't appear on the site.", "warning");
-      (Array.isArray(sec.items) ? sec.items : []).forEach(function (it, j) {
-        if (!has(it.title) && !has(it.body) && !(it.image && has(it.image.src)))
-          add("sections", where + " › item " + (j + 1), "is empty.", "warning");
-        if (it.image && has(it.image.src) && !has(it.image.alt))
-          add("sections", where + " › item " + (j + 1) + " image", "has no alt text.", "warning");
-      });
-    });
-
-    /* theme + pdf sanity */
-    if (TH) {
-      const known = data.theme.templates.concat(TH.THEMES).map((t) => t.id);
-      if (known.indexOf(data.theme.preset) === -1)
-        add("theme", "Theme › Template", '"' + data.theme.preset + '" no longer exists — the site will fall back to Graphite.', "warning");
-      const pdfIds = TH.PDF_TEMPLATES.map((t) => t.id);
-      if (pdfIds.indexOf(data.pdf.template) === -1)
-        add("pdf", "PDF › Layout", '"' + data.pdf.template + '" is not a known layout.', "warning");
-    }
-
-    return problems;
-  }
-
-  function showProblems(problems) {
-    const host = document.getElementById("problems-host");
-    if (host) host.remove();
-    if (!problems.length) return;
-
-    const errors = problems.filter((p) => p.level === "error");
-    const onlyWarn = errors.length === 0;
-    const heading = onlyWarn
-      ? problems.length + (problems.length === 1 ? " warning — you can still save" : " warnings — you can still save")
-      : errors.length + (errors.length === 1 ? " problem blocks the save" : " problems block the save");
-
-    const panel = el("div", { class: "problems" + (onlyWarn ? " only-warn" : ""), id: "problems-host", role: "alert", tabindex: "-1" },
-      el("h2", { text: heading }),
-      el("ul", null, problems.map((p) => el("li", null,
-        el("span", { class: "lvl " + (p.level === "warning" ? "warning" : "error"), text: p.level === "warning" ? "warn" : "error" }),
-        el("span", { class: "where", text: p.where }),
-        el("span", { text: p.message }),
-        el("button", { type: "button", text: "Go to " + p.tab, onclick: () => selectTab(p.tab) })))));
-
-    document.getElementById("panels").before(panel);
-    panel.focus();
-  }
-
-  /* ====================================================================
-     TABS
-     ==================================================================== */
-  const tablist = document.getElementById("tablist");
-  const panels = document.getElementById("panels");
-  const panelNodes = {};
-
-  function buildTabs() {
-    clear(tablist); clear(panels);
-    Object.keys(panelNodes).forEach((k) => delete panelNodes[k]);
-
-    TABS.forEach(function (group) {
-      const tabId = "tab-" + group.key, panelId = "panel-" + group.key;
-
-      const tab = el("button", {
-        type: "button", class: "tab", id: tabId, role: "tab",
-        "aria-selected": String(group.key === activeTab),
-        "aria-controls": panelId,
-        tabindex: group.key === activeTab ? "0" : "-1",
-        onclick: () => selectTab(group.key)
-      }, group.label, group.kind === "list" && el("span", { class: "count", "data-count": group.key }));
-
-      tab.addEventListener("keydown", function (e) {
-        const keys = { ArrowRight: 1, ArrowLeft: -1, Home: "first", End: "last" };
-        if (!(e.key in keys)) return;
-        e.preventDefault();
-        const i = TABS.findIndex((t) => t.key === group.key);
-        let next;
-        if (keys[e.key] === "first") next = 0;
-        else if (keys[e.key] === "last") next = TABS.length - 1;
-        else next = (i + keys[e.key] + TABS.length) % TABS.length;
-        selectTab(TABS[next].key);
-        document.getElementById("tab-" + TABS[next].key).focus();
-      });
-
-      tablist.appendChild(tab);
-
-      const panel = el("section", {
-        id: panelId, role: "tabpanel", "aria-labelledby": tabId,
-        tabindex: "0", hidden: group.key !== activeTab
-      });
-      panelNodes[group.key] = panel;
-      panels.appendChild(panel);
-      buildPanel(group, panel);
-    });
-    refreshCounts();
-  }
-
-  function buildPanel(group, panel) {
-    if (group.kind === "sections") return buildSectionsPanel(panel);
-    if (group.kind === "theme") return buildThemePanel(panel);
-    if (group.kind === "pdf") return buildPdfPanel(panel);
-    if (group.kind === "preview") return buildPreviewPanel(panel);
-
-    clear(panel);
-    panel.appendChild(el("div", { class: "panel-head" }, el("h2", { text: group.label })));
-    if (group.doc) panel.appendChild(el("p", { class: "section-doc", text: group.doc }));
-
-    if (group.kind === "object") {
-      panel.appendChild(el("div", { class: "item-card" },
-        el("div", { class: "item-body" }, fieldGroups(data[group.key], group.fields, null))));
-    } else {
-      panel.appendChild(listEditor(() => data[group.key], {
-        fields: group.fields, itemLabel: group.itemLabel, title: group.title, idPrefix: group.idPrefix
-      }));
-    }
-  }
-
-  function buildPreviewPanel(panel) {
-    clear(panel);
-    panel.appendChild(el("div", { class: "panel-head" }, el("h2", { text: "Preview" })));
-    panel.appendChild(el("p", { class: "section-doc", text:
-      "The real site, rendered against your unsaved edits — including the theme and any custom sections. Nothing here is committed." }));
-
-    const viewSwitch = el("div", { class: "mode-switch", role: "group", "aria-label": "Preview view" },
-      [["site", "Site"], ["print", "PDF layout"]].map((v) => el("button", {
-        type: "button", "aria-pressed": String(previewView === v[0]), text: v[1],
-        onclick: function () { previewView = v[0]; buildPreviewPanel(panel); sendPreview(); }
-      })));
-
-    const modeSwitch = el("div", { class: "mode-switch", role: "group", "aria-label": "Preview colour mode" },
-      [["dark", "Dark"], ["light", "Light"]].map((m) => el("button", {
-        type: "button", "aria-pressed": String(data.theme.mode === m[0]), text: m[1],
-        onclick: function () { data.theme.mode = m[0]; editMode = m[0]; touched(); buildPreviewPanel(panel); sendPreview(); }
-      })));
-
-    panel.appendChild(el("div", { class: "preview-bar" },
-      viewSwitch, modeSwitch,
-      el("button", { class: "btn btn-ghost btn-sm", type: "button", onclick: refreshPreview }, "Reload preview"),
-      el("span", { class: "hint", id: "preview-hint", style: "font-size:.78rem;color:var(--text-dim)" })));
-
-    panel.appendChild(el("iframe", {
-      class: "preview-frame", id: "preview-frame",
-      title: "Live preview of the portfolio", src: "index.html?preview=1"
-    }));
-    previewReady = false;
-  }
-
-  function selectTab(key) {
-    activeTab = key;
-    TABS.forEach(function (t) {
-      const tab = document.getElementById("tab-" + t.key);
-      const panel = panelNodes[t.key];
-      if (!tab || !panel) return;
-      const on = t.key === key;
-      tab.setAttribute("aria-selected", String(on));
-      tab.tabIndex = on ? 0 : -1;
-      panel.hidden = !on;
-    });
-    if (key === "preview") sendPreview();
-  }
-
-  function refreshCounts() {
-    SCHEMA.forEach(function (g) {
-      if (g.kind !== "list") return;
-      const node = tablist.querySelector('[data-count="' + g.key + '"]');
-      if (node) node.textContent = String(data[g.key].length);
-    });
-  }
-
-  /* ====================================================================
-     PREVIEW BRIDGE
-     ==================================================================== */
-  window.addEventListener("message", function (e) {
-    const frame = document.getElementById("preview-frame");
-    if (!frame || e.source !== frame.contentWindow) return;
-    if (!e.data || e.data.type !== "portfolio:preview-ready") return;
-    previewReady = true;
-    sendPreview();
-  });
-
-  function sendPreview() {
-    const frame = document.getElementById("preview-frame");
-    const hint = document.getElementById("preview-hint");
-    if (!frame || !frame.contentWindow) return;
-    if (!previewReady) { if (hint) hint.textContent = "Loading preview…"; return; }
-    frame.contentWindow.postMessage({
-      type: "portfolio:data",
-      data: JSON.parse(serialise()),
-      mode: data.theme.mode,
-      view: previewView,
-      pdfTemplate: data.pdf.template,
-      paper: data.pdf.paper
-    }, "*");
-    if (hint) hint.textContent = previewView === "print"
-      ? "Showing the " + data.pdf.template + " PDF layout."
-      : "Showing your unsaved edits.";
-  }
-
-  function refreshPreview() {
-    const frame = document.getElementById("preview-frame");
-    if (!frame) return;
-    previewReady = false;
-    frame.src = "index.html?preview=1";
-  }
-
-  /* ====================================================================
-     DIRTY TRACKING
-     ==================================================================== */
-  function touched() {
-    updateDirty();
-    if (activeTab === "preview") sendPreview();
-  }
-
-  function updateDirty() {
-    const label = document.getElementById("dirty-label");
-    if (!label) return;
-    const dirty = isDirty();
-    label.className = dirty ? "dirty-dot" : "clean-dot";
-    label.textContent = dirty ? "Unsaved changes" : "Saved";
-  }
-
-  window.addEventListener("beforeunload", function (e) {
-    if (!TOKEN || !isDirty()) return;
-    e.preventDefault();
-    e.returnValue = "";
-    return "";
-  });
-
-  /* ====================================================================
-     CONNECT / RELOAD / SAVE
-     ==================================================================== */
-  const connectView = document.getElementById("connect-view");
-  const editorView = document.getElementById("editor-view");
-  const connectMsg = document.getElementById("connect-msg");
-  const saveMsg = document.getElementById("save-msg");
-
-  function setMsg(node, text, kind) {
-    node.textContent = text;
-    node.className = "save-msg" + (kind ? " " + kind : "");
-  }
-
-  document.getElementById("connect-form").addEventListener("submit", function (e) {
-    e.preventDefault();
-    const tokenInput = document.getElementById("in-token");
-    repo = {
-      owner: document.getElementById("in-owner").value.trim(),
-      name: document.getElementById("in-repo").value.trim(),
-      branch: document.getElementById("in-branch").value.trim() || "main",
-      path: document.getElementById("in-path").value.trim().replace(/^\/+/, "") || "data.json"
-    };
-    TOKEN = tokenInput.value.trim();
-    if (!TOKEN) { setMsg(connectMsg, "Paste a token first.", "err"); return; }
-    if (!repo.owner || !repo.name) { setMsg(connectMsg, "Username and repository are both required.", "err"); return; }
-
-    const btn = document.getElementById("connect-btn");
-    btn.disabled = true;
-    setMsg(connectMsg, "Connecting…");
-
-    fetchFile().then(function (res) {
-      tokenInput.value = "";               // the token lives in TOKEN only
-      data = res.data;
-      sha = res.sha;
-      savedSnapshot = serialise();
-      editMode = data.theme.mode;
-
-      document.getElementById("repo-label").textContent =
-        repo.owner + "/" + repo.name + " @ " + repo.branch + " · " + repo.path;
-      document.getElementById("sha-label").textContent = "sha " + String(sha).slice(0, 7);
-
-      connectView.hidden = true;
-      editorView.hidden = false;
-      document.getElementById("disconnect-btn").hidden = false;
-      buildTabs();
-      selectTab("profile");
-      // Building the forms can materialise absent-but-implied structures
-      // (an empty links[] on an item that had none). That isn't an edit, so
-      // re-baseline here rather than opening with a phantom "unsaved".
-      savedSnapshot = serialise();
-      updateDirty();
-      setMsg(saveMsg, "Loaded " + repo.path + " from GitHub.", "ok");
-    }).catch(function (err) {
-      setMsg(connectMsg, String(err.message || err), "err");
-    }).then(function () { btn.disabled = false; });
-  });
-
-  document.getElementById("disconnect-btn").addEventListener("click", function () {
-    if (isDirty() && !window.confirm("You have unsaved changes. Disconnect and lose them?")) return;
-    TOKEN = null; sha = null; data = normalise({}); savedSnapshot = serialise();
-    editorView.hidden = true;
-    connectView.hidden = false;
-    document.getElementById("disconnect-btn").hidden = true;
-    resetEditorTheme();
-    applyThemeHere = false;
-    setMsg(connectMsg, "Disconnected. The token has been discarded.", "ok");
-  });
-
-  document.getElementById("reload-btn").addEventListener("click", function () {
-    if (isDirty() && !window.confirm("Reloading discards your unsaved edits. Continue?")) return;
-    setMsg(saveMsg, "Reloading…");
-    fetchFile().then(function (res) {
-      data = res.data; sha = res.sha; savedSnapshot = serialise();
-      editMode = data.theme.mode;
-      document.getElementById("sha-label").textContent = "sha " + String(sha).slice(0, 7);
-      buildTabs(); selectTab(activeTab === "preview" ? "profile" : activeTab);
-      updateDirty();
-      setMsg(saveMsg, "Reloaded from GitHub.", "ok");
-    }).catch(function (err) { setMsg(saveMsg, String(err.message || err), "err"); });
-  });
-
-  document.getElementById("save-btn").addEventListener("click", function () {
-    const problems = validate();
-    showProblems(problems);
-    const errors = problems.filter((p) => p.level === "error");
-    if (errors.length) {
-      setMsg(saveMsg, "Nothing was committed — fix the " + errors.length +
-        (errors.length === 1 ? " problem" : " problems") + " listed above.", "err");
-      return;
-    }
-
-    const btn = document.getElementById("save-btn");
-    const message = document.getElementById("commit-msg").value.trim() || "Update portfolio content";
-    const payload = serialise();
-
-    btn.disabled = true;
-    setMsg(saveMsg, "Committing to " + repo.owner + "/" + repo.name + "…");
-
-    putFile(repo.path, message, toBase64(payload), sha).then(function (res) {
-      if (res.ok) {
-        sha = (res.json && res.json.content && res.json.content.sha) || sha;
-        savedSnapshot = payload;
-        document.getElementById("sha-label").textContent = "sha " + String(sha).slice(0, 7);
-        updateDirty();
-        const url = res.json && res.json.commit && res.json.commit.html_url;
-        setMsg(saveMsg, "Committed. GitHub Pages usually redeploys within a minute.", "ok");
-        if (url) {
-          saveMsg.appendChild(document.createTextNode(" "));
-          saveMsg.appendChild(el("a", { href: url, target: "_blank", rel: "noopener noreferrer", text: "View commit ↗" }));
-        }
-        return;
-      }
-
-      const stale = res.status === 409 ||
-        (res.status === 422 && /sha/i.test((res.json && res.json.message) || ""));
-      if (stale) {
-        setMsg(saveMsg, "Conflict — " + repo.path + " changed on GitHub since you loaded it. Fetching the new version…", "warn");
-        return fetchFile().then(function (fresh) {
-          sha = fresh.sha;
-          document.getElementById("sha-label").textContent = "sha " + String(sha).slice(0, 7);
-          const remote = JSON.stringify(fresh.data, null, 2) + "\n";
-          setMsg(saveMsg, remote === payload
-            ? "Conflict resolved: the remote file already matches your edits. Nothing to commit — press Save again if you want an empty-diff commit."
-            : "Nothing was committed. Someone (or another tab) changed " + repo.path + ". Your edits are still here and the sha is refreshed — press Save again to overwrite the remote version, or Reload from GitHub to throw yours away.",
-            "warn");
-        });
-      }
-
-      throw new Error(describeHttpError(res.status, res.json));
-    }).catch(function (err) {
-      setMsg(saveMsg, "Save failed — " + String(err.message || err), "err");
-    }).then(function () { btn.disabled = false; });
-  });
-
-  document.getElementById("download-btn").addEventListener("click", function () {
-    const blob = new Blob([serialise()], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = el("a", { href: url, download: "data.json" });
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-    setMsg(saveMsg, "Downloaded data.json — commit it by hand if you prefer.", "ok");
-  });
-
-  /* ====================================================================
-     CHROME
-     ==================================================================== */
-  const themeBtn = document.getElementById("theme-toggle");
-  themeBtn.addEventListener("click", function () {
-    const root = document.documentElement;
-    const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
-    root.setAttribute("data-theme", next);
-    themeBtn.setAttribute("aria-pressed", String(next === "light"));
-    themeBtn.setAttribute("aria-label", next === "dark" ? "Switch to light theme" : "Switch to dark theme");
-    if (applyThemeHere && TH) TH.applyTheme(document, resolvedTheme(), next);
-  });
-
-  const host = window.location.hostname;
-  if (window.location.protocol === "http:" && host !== "localhost" && host !== "127.0.0.1") {
-    document.getElementById("insecure-warning").hidden = false;
-  }
-
-  const ghMatch = host.match(/^([^.]+)\.github\.io$/);
-  if (ghMatch) {
-    document.getElementById("in-owner").value = ghMatch[1];
-    document.getElementById("in-repo").value = host;
-  }
-
-  savedSnapshot = serialise();
-})();
-</script>
+<script src="js/core.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/themes.js"></script>
+<script src="js/layouts.js"></script>
+<script src="js/resume.js"></script>
+<script src="js/admin.js"></script>
 </body>
 </html>

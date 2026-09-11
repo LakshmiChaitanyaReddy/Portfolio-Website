@@ -1,36 +1,28 @@
 /* ==========================================================================
-   themes.js — presets, font catalogue, print layouts and section layouts.
+   themes.js — the theme registry.
 
-   Loaded by BOTH index.html and admin.html as a plain <script>, so a theme
-   is defined exactly once. No build step, no modules.
+   A theme is a bag of CSS custom properties applied inline on <html> at
+   runtime. index.html and admin.html both declare sane defaults for every
+   property, so a missing theme degrades to the default Graphite look.
 
-   HOW A THEME WORKS
-   -----------------
-   A theme is nothing but a bag of CSS custom properties, applied inline on
-   <html> at runtime. The stylesheets in index.html/admin.html declare sane
-   defaults for every one of them, so if this file fails to load the site
-   still renders in the default Graphite look.
-
-   Each theme declares only TEN colours per mode. Everything else is derived
-   in CSS or in applyTheme():
+   Each preset authors only TEN colours per mode. Everything else derives:
      --accent-strong   accent mixed toward white (dark) / black (light)
      --accent-soft     accent at 12% alpha
      --header-bg       page background at 80% alpha
-     --on-accent       black or white, picked by luminance for contrast
+     --on-accent       black or white, chosen by luminance for contrast
 
-   ADDING YOUR OWN
-   ---------------
-   You don't need to edit this file — admin.html's Theme tab writes custom
-   templates into data.json under theme.templates, in exactly the shape of
-   the objects below. Editing here just gives everyone the new preset.
+   ADDING A PRESET: append one object to THEMES. Nothing else to touch —
+   the admin's gallery, the var editor and the validator all read this list.
    ========================================================================== */
-(function (root) {
+(function () {
   "use strict";
+  const PF = (window.PF = window.PF || {});
+  PF.modules = PF.modules || {};
+  PF.provide = PF.provide || function (n, api) { PF[n] = api; PF.modules[n] = true; };
 
   /* ------------------------------------------------------------------
-     FONT CATALOGUE — every family the theme builder can offer.
-     `spec` is the exact Google Fonts css2 family string (weights matter:
-     Space Mono has no 500, Instrument Serif has only 400).
+     FONT CATALOGUE — `spec` is the exact Google Fonts css2 family string.
+     Weights matter: Space Mono has no 500, Instrument Serif only has 400.
      ------------------------------------------------------------------ */
   const FONTS = {
     "Space Grotesk":       { spec: "Space+Grotesk:wght@500;600;700", kind: "sans" },
@@ -46,12 +38,14 @@
     "Source Sans 3":       { spec: "Source+Sans+3:wght@400;500;600;700", kind: "sans" },
     "IBM Plex Sans":       { spec: "IBM+Plex+Sans:wght@400;500;600", kind: "sans" },
     "Nunito Sans":         { spec: "Nunito+Sans:wght@400;500;600;700", kind: "sans" },
+    "DM Sans":             { spec: "DM+Sans:wght@400;500;700", kind: "sans" },
 
     "Fraunces":            { spec: "Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700", kind: "serif" },
     "Playfair Display":    { spec: "Playfair+Display:wght@500;600;700", kind: "serif" },
     "Instrument Serif":    { spec: "Instrument+Serif", kind: "serif" },
     "Newsreader":          { spec: "Newsreader:wght@400;500;600", kind: "serif" },
     "Lora":                { spec: "Lora:wght@400;500;600;700", kind: "serif" },
+    "Source Serif 4":      { spec: "Source+Serif+4:wght@400;600;700", kind: "serif" },
 
     "JetBrains Mono":      { spec: "JetBrains+Mono:wght@400;500", kind: "mono" },
     "IBM Plex Mono":       { spec: "IBM+Plex+Mono:wght@400;500;600", kind: "mono" },
@@ -66,7 +60,7 @@
     mono:  'ui-monospace, "SF Mono", Menlo, monospace'
   };
 
-  /* Shorthand for the ten colours a mode needs, in a fixed order. */
+  /* The ten colours a mode needs, in a fixed order. */
   function mode(accent, bg, bgAlt, surface, surface2, text, textMid, textDim, border, border2, danger, warn) {
     return {
       "--accent": accent,
@@ -93,13 +87,9 @@
     }, opts || {});
   }
 
-  /* ------------------------------------------------------------------
-     THE PRESETS
-     ------------------------------------------------------------------ */
   const THEMES = [
     {
-      id: "graphite",
-      name: "Graphite",
+      id: "graphite", name: "Graphite",
       blurb: "The default. Mint accent on cool charcoal, geometric headings — quiet and engineer-credible.",
       fonts: { display: "Space Grotesk", body: "Inter", mono: "JetBrains Mono" },
       vars: {
@@ -109,8 +99,7 @@
       }
     },
     {
-      id: "ink",
-      name: "Ink",
+      id: "ink", name: "Ink",
       blurb: "Editorial. Warm paper, amber accent, Fraunces headings with real optical sizing.",
       fonts: { display: "Fraunces", body: "Inter", mono: "IBM Plex Mono" },
       vars: {
@@ -120,30 +109,27 @@
       }
     },
     {
-      id: "terminal",
-      name: "Terminal",
+      id: "terminal", name: "Terminal",
       blurb: "Monospace everything, phosphor green, square corners. Unapologetically a developer's page.",
       fonts: { display: "IBM Plex Mono", body: "IBM Plex Sans", mono: "IBM Plex Mono" },
       vars: {
-        common: shape({ "--radius": "2px", "--radius-sm": "2px", "--chip-radius": "2px", "--maxw": "980px", "--h-tracking": "0em", "--h-weight": "600", "--line-height": "1.65" }),
+        common: shape({ "--radius": "2px", "--radius-sm": "2px", "--chip-radius": "2px", "--maxw": "980px", "--h-tracking": "0em", "--line-height": "1.65" }),
         dark:  mode("#4ade80", "#0a0f0c", "#0e140f", "#121a14", "#17211a", "#d8f0dd", "#a3bda9", "#6f8875", "#1e2b21", "#2c3d30", "#ff6b6b", "#e3b341"),
         light: mode("#15803d", "#f7faf7", "#eef4ef", "#ffffff", "#e9f0ea", "#0f1710", "#3d4a40", "#66756a", "#dbe5dc", "#bcc9be", "#c62828", "#7a5900")
       }
     },
     {
-      id: "sapphire",
-      name: "Sapphire",
+      id: "sapphire", name: "Sapphire",
       blurb: "Corporate-clean blue with soft, generous rounding. Reads well to non-technical reviewers.",
       fonts: { display: "Manrope", body: "Inter", mono: "JetBrains Mono" },
       vars: {
         common: shape({ "--radius": "18px", "--radius-sm": "10px", "--chip-radius": "999px", "--maxw": "1120px", "--gap": "1.25rem" }),
         dark:  mode("#5b9dff", "#0b1020", "#0f1528", "#141b33", "#1b2440", "#e6ecff", "#b0bcd9", "#7885a8", "#212c4d", "#2f3d64", "#ff6b6b", "#e3b341"),
-        light: mode("#1f5fd0", "#fbfcff", "#f1f4fb", "#ffffff", "#eef2fa", "#101528", "#414a63", "#6b7590", "#e0e6f2", "#c4cde0", "#c62828", "#8a6100")
+        light: mode("#1f5fd0", "#fbfcff", "#f1f4fb", "#ffffff", "#eef2fa", "#101528", "#414a63", "#5f6880", "#e0e6f2", "#c4cde0", "#c62828", "#8a6100")
       }
     },
     {
-      id: "crimson",
-      name: "Crimson",
+      id: "crimson", name: "Crimson",
       blurb: "Heavier headings, rust-red accent, tight corners. Loud without being a template.",
       fonts: { display: "Archivo", body: "Inter", mono: "Space Mono" },
       vars: {
@@ -153,8 +139,7 @@
       }
     },
     {
-      id: "sage",
-      name: "Sage",
+      id: "sage", name: "Sage",
       blurb: "Low-contrast olive and sand with a serif display face. Calm, slightly academic.",
       fonts: { display: "Instrument Serif", body: "Karla", mono: "IBM Plex Mono" },
       vars: {
@@ -164,8 +149,7 @@
       }
     },
     {
-      id: "slate",
-      name: "Slate Mono",
+      id: "slate", name: "Slate Mono",
       blurb: "No colour at all — square corners, mono display face, contrast doing all the work.",
       fonts: { display: "Space Mono", body: "Work Sans", mono: "Space Mono" },
       vars: {
@@ -175,8 +159,7 @@
       }
     },
     {
-      id: "violet",
-      name: "Violet",
+      id: "violet", name: "Violet",
       blurb: "Soft purple, big rounding, friendly geometric sans. Modern product-designer energy.",
       fonts: { display: "Outfit", body: "Inter", mono: "JetBrains Mono" },
       vars: {
@@ -186,25 +169,83 @@
       }
     },
     {
-      id: "frost",
-      name: "Frost",
+      id: "frost", name: "Frost",
       blurb: "Nordic blue-grey. Lighter dark mode than most — easy on the eyes for long reads.",
       fonts: { display: "Inter", body: "Inter", mono: "JetBrains Mono" },
       vars: {
         common: shape({ "--radius": "8px", "--radius-sm": "6px", "--maxw": "1040px", "--h-tracking": "-0.025em", "--h-weight": "700" }),
         dark:  mode("#88c0d0", "#2e3440", "#333a47", "#3b4252", "#434c5e", "#eceff4", "#d8dee9", "#a9b3c4", "#4c566a", "#5b667c", "#bf616a", "#ebcb8b"),
-        light: mode("#2e6d80", "#f7f9fb", "#eceff4", "#ffffff", "#e5e9f0", "#2e3440", "#4c566a", "#6d788c", "#dde3ea", "#c3ccd8", "#a3313c", "#7a5c00")
+        light: mode("#2e6d80", "#f7f9fb", "#eceff4", "#ffffff", "#e5e9f0", "#2e3440", "#4c566a", "#616b7f", "#dde3ea", "#c3ccd8", "#a3313c", "#7a5c00")
       }
     },
     {
-      id: "press",
-      name: "Press",
+      id: "press", name: "Press",
       blurb: "Broadsheet. High-contrast Playfair headlines, hairline rules, no rounding anywhere.",
       fonts: { display: "Playfair Display", body: "Source Sans 3", mono: "IBM Plex Mono" },
       vars: {
         common: shape({ "--radius": "0px", "--radius-sm": "0px", "--chip-radius": "0px", "--maxw": "940px", "--h-scale": "1.15", "--h-weight": "700", "--h-tracking": "-0.015em", "--line-height": "1.72" }),
         dark:  mode("#d4a373", "#101010", "#161616", "#1c1c1c", "#242424", "#f2f2f0", "#c0c0bc", "#8a8a86", "#2a2a2a", "#3b3b3b", "#e5726b", "#dcb45c"),
         light: mode("#8a5a2b", "#ffffff", "#f5f4f1", "#ffffff", "#f0efec", "#111111", "#444444", "#6f6f6f", "#e5e4e0", "#cccbc6", "#b3261e", "#7a5900")
+      }
+    },
+    {
+      id: "carbon", name: "Carbon",
+      blurb: "Near-black with a single hot-orange accent. Industrial, high contrast, very little colour.",
+      fonts: { display: "Sora", body: "Inter", mono: "JetBrains Mono" },
+      vars: {
+        common: shape({ "--radius": "6px", "--radius-sm": "4px", "--chip-radius": "4px", "--maxw": "1060px", "--h-weight": "700", "--h-tracking": "-0.028em" }),
+        dark:  mode("#ff7b32", "#0c0c0d", "#121214", "#17181a", "#1f2023", "#f1f1f2", "#b8b9bd", "#7f8084", "#24252a", "#34353c", "#ff6b6b", "#e3b341"),
+        light: mode("#c2410c", "#fcfcfc", "#f4f4f5", "#ffffff", "#f0f0f1", "#111113", "#44454a", "#6e6f75", "#e4e4e7", "#c9cace", "#c62828", "#8a6100")
+      }
+    },
+    {
+      id: "mint", name: "Mint",
+      blurb: "Fresh and airy, tuned light-first. Rounded, generous, low-contrast without being washed out.",
+      fonts: { display: "Figtree", body: "Figtree", mono: "Roboto Mono" },
+      vars: {
+        common: shape({ "--radius": "16px", "--radius-sm": "10px", "--chip-radius": "999px", "--maxw": "1080px", "--line-height": "1.72", "--h-tracking": "-0.022em" }),
+        dark:  mode("#34d399", "#0c1512", "#101b17", "#14211c", "#1b2a24", "#e6f4ee", "#b0c8bf", "#7c9690", "#1f312a", "#2d4439", "#ff6b6b", "#e3b341"),
+        light: mode("#047857", "#f8fcfa", "#eef7f3", "#ffffff", "#e9f4ef", "#0e1a15", "#3d4f48", "#5a716b", "#dceae4", "#bed4cb", "#c62828", "#8a6100")
+      }
+    },
+    {
+      id: "noir", name: "Noir",
+      blurb: "Pure black and white, nothing else. Maximum contrast, zero decoration.",
+      fonts: { display: "Bricolage Grotesque", body: "Inter", mono: "Space Mono" },
+      vars: {
+        common: shape({ "--radius": "0px", "--radius-sm": "0px", "--chip-radius": "0px", "--maxw": "960px", "--h-weight": "700", "--h-scale": "1.08", "--h-tracking": "-0.035em" }),
+        dark:  mode("#ffffff", "#000000", "#0a0a0a", "#101010", "#1a1a1a", "#ffffff", "#bdbdbd", "#8a8a8a", "#242424", "#3a3a3a", "#ff6b6b", "#e3b341"),
+        light: mode("#000000", "#ffffff", "#f4f4f4", "#ffffff", "#eeeeee", "#000000", "#3d3d3d", "#6b6b6b", "#e0e0e0", "#c4c4c4", "#c62828", "#8a6100")
+      }
+    },
+    {
+      id: "ocean", name: "Ocean",
+      blurb: "Deep navy with a bright sky accent. Roomy line height, comfortable for long text.",
+      fonts: { display: "DM Sans", body: "Nunito Sans", mono: "JetBrains Mono" },
+      vars: {
+        common: shape({ "--radius": "12px", "--radius-sm": "8px", "--maxw": "1100px", "--line-height": "1.75", "--gap": "1.2rem" }),
+        dark:  mode("#38bdf8", "#071120", "#0b1728", "#0f1d33", "#16273f", "#e4eefb", "#aabed6", "#74889f", "#1c2d46", "#2a3f5d", "#ff6b6b", "#e3b341"),
+        light: mode("#0369a1", "#f9fcff", "#eff6fc", "#ffffff", "#eaf3fa", "#0b1622", "#3c4b5c", "#5d6e7f", "#dde9f2", "#c0d2e0", "#c62828", "#8a6100")
+      }
+    },
+    {
+      id: "rose", name: "Rose",
+      blurb: "Dusty rose over warm plum, Lora headings. Softer and more personal than the rest.",
+      fonts: { display: "Lora", body: "Karla", mono: "IBM Plex Mono" },
+      vars: {
+        common: shape({ "--radius": "12px", "--radius-sm": "8px", "--maxw": "1000px", "--h-weight": "600", "--h-tracking": "-0.012em", "--line-height": "1.74" }),
+        dark:  mode("#e8899f", "#170f12", "#1c1417", "#22181c", "#2b1f24", "#f6ebee", "#cbb6bc", "#947d84", "#2f2226", "#402f35", "#ff6b6b", "#e3b341"),
+        light: mode("#a63d59", "#fffafb", "#f8eef1", "#ffffff", "#f5e9ed", "#1a1114", "#4c3b41", "#7a666d", "#eddde2", "#d6bfc6", "#b3261e", "#8a6100")
+      }
+    },
+    {
+      id: "solar", name: "Solar",
+      blurb: "Solarized. Teal-slate surfaces, ochre accent, cream text — a classic terminal palette.",
+      fonts: { display: "Work Sans", body: "Work Sans", mono: "Roboto Mono" },
+      vars: {
+        common: shape({ "--radius": "5px", "--radius-sm": "4px", "--chip-radius": "3px", "--maxw": "1020px", "--h-tracking": "-0.015em" }),
+        dark:  mode("#b58900", "#002b36", "#003440", "#073642", "#0d4250", "#eee8d5", "#b7c3c3", "#839496", "#12495a", "#1d5b6d", "#dc322f", "#cb4b16"),
+        light: mode("#856404", "#fdf6e3", "#f5eed8", "#fffdf5", "#f0e9d3", "#073642", "#3f5560", "#586d75", "#e6dfc6", "#cfc7ab", "#c0392b", "#8a6100")
       }
     }
   ];
@@ -273,33 +314,6 @@
   ];
 
   /* ------------------------------------------------------------------
-     PRINT / PDF LAYOUTS — CSS classes on the print root in index.html
-     ------------------------------------------------------------------ */
-  const PDF_TEMPLATES = [
-    { id: "compact", name: "Compact", blurb: "One column, dense. The most content per page — good for a long history.",
-      sketch: ["███████████████  name", "─────────────────", "EXPERIENCE", "▪ role ─────  date", "  • bullet", "  • bullet", "PROJECTS", "▪ title ────  tags"] },
-    { id: "sidebar", name: "Sidebar", blurb: "Two columns. Contact, skills and certifications sit in a left rail.",
-      sketch: ["████████  name", "┌────┬──────────┐", "│cont│EXPERIENCE│", "│skil│▪ role    │", "│cert│  • bullet│", "│edu │PROJECTS  │", "└────┴──────────┘"] },
-    { id: "classic", name: "Classic", blurb: "Centred header, serif headings, roomy leading. The conventional choice.",
-      sketch: ["    NAME", "  title · contact", "═════════════════", "   EXPERIENCE", "▪ role       date", "  • bullet"] },
-    { id: "timeline", name: "Timeline", blurb: "Dates in a left gutter with a rule down the page. Reads as a career arc.",
-      sketch: ["███████████  name", "2026 │ ▪ role", "     │   • bullet", "2022 │ ▪ role", "     │   • bullet"] },
-    { id: "minimal", name: "Minimal", blurb: "No rules, no colour, no chips. Text and whitespace only — ATS-safest.",
-      sketch: ["name", "title · contact", "", "EXPERIENCE", "role, company   date", "  bullet"] }
-  ];
-
-  /* ------------------------------------------------------------------
-     LAYOUTS AVAILABLE TO CUSTOM SECTIONS
-     ------------------------------------------------------------------ */
-  const SECTION_LAYOUTS = [
-    { id: "cards", name: "Cards", blurb: "Grid of cards. Talks, awards, side projects, open-source work." },
-    { id: "timeline", name: "Timeline", blurb: "Dated vertical run, like Experience. Milestones, volunteering, roles." },
-    { id: "list", name: "List", blurb: "Compact rows with the date on the right. Publications, mentions, courses." },
-    { id: "prose", name: "Prose", blurb: "Plain paragraphs. A longer narrative or a statement." },
-    { id: "gallery", name: "Gallery", blurb: "Image grid with captions. Screenshots, diagrams, certificates." }
-  ];
-
-  /* ------------------------------------------------------------------
      HELPERS
      ------------------------------------------------------------------ */
   function themeById(id, custom) {
@@ -318,6 +332,7 @@
       id: base.id,
       name: base.name,
       blurb: base.blurb,
+      iconAnimation: typeof cfg.iconAnimation === "string" ? cfg.iconAnimation : "lift",
       fonts: Object.assign({ display: "Inter", body: "Inter", mono: "JetBrains Mono" }, base.fonts, cfg.fonts || {}),
       vars: {
         common: Object.assign({}, shape(), bv.common, cv.common || {}),
@@ -333,7 +348,7 @@
     return name ? '"' + name + '", ' + fallback : fallback;
   }
 
-  /* One <link> for all three families. */
+  /* One <link> for all three families, each requested once. */
   function fontHref(fonts) {
     const wanted = [];
     ["display", "body", "mono"].forEach(function (role) {
@@ -344,7 +359,6 @@
     return "https://fonts.googleapis.com/css2?family=" + wanted.join("&family=") + "&display=swap";
   }
 
-  /* WCAG relative luminance → black or white text on top of the accent. */
   function luminance(hex) {
     const m = String(hex || "").trim().match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i);
     if (!m) return 0;
@@ -357,18 +371,16 @@
     return 0.2126 * channel(h.slice(0, 2)) + 0.7152 * channel(h.slice(2, 4)) + 0.0722 * channel(h.slice(4, 6));
   }
 
-  /* Black or white on top of the accent, whichever actually contrasts more.
-     0.1791 is the crossover where the two are equal — it solves
-     1.05 / (L + 0.05) == (L + 0.05) / 0.05. Guessing a threshold here is how
-     you end up with white-on-olive at 2.3:1. */
+  /* Black or white on the accent, whichever actually contrasts more.
+     0.1791 is where the two are equal: 1.05/(L+.05) == (L+.05)/.05.
+     Guessing a threshold here is how you get white-on-olive at 2.3:1. */
   const CONTRAST_CROSSOVER = 0.1791;
-  const onAccent = (accent) => (luminance(accent) > CONTRAST_CROSSOVER ? "#0a0f0d" : "#ffffff");
+  const onAccent = function (accent) { return luminance(accent) > CONTRAST_CROSSOVER ? "#0a0f0d" : "#ffffff"; };
 
-  /* Apply a resolved theme to a document. Inline styles on <html> beat the
-     stylesheet defaults, so this wins without !important. Called again on
-     every light/dark toggle. */
+  /* Inline styles on <html> beat the stylesheet defaults, so this wins
+     without !important. Called again on every light/dark toggle. */
   function applyTheme(doc, resolved, themeMode) {
-    if (!doc || !resolved) return;
+    if (!doc || !resolved) return null;
     const el = doc.documentElement;
     const m = themeMode === "light" ? "light" : "dark";
     const vars = Object.assign({}, resolved.vars.common, resolved.vars[m] || {});
@@ -398,19 +410,26 @@
     return vars;
   }
 
-  root.PortfolioThemes = {
+  function clearTheme(doc) {
+    const style = doc.documentElement.style;
+    for (let i = style.length - 1; i >= 0; i--) {
+      const prop = style[i];
+      if (prop.indexOf("--") === 0) style.removeProperty(prop);
+    }
+  }
+
+  PF.provide("themes", {
     FONTS: FONTS,
     THEMES: THEMES,
     VAR_GROUPS: VAR_GROUPS,
-    PDF_TEMPLATES: PDF_TEMPLATES,
-    SECTION_LAYOUTS: SECTION_LAYOUTS,
     themeById: themeById,
     resolveTheme: resolveTheme,
     applyTheme: applyTheme,
+    clearTheme: clearTheme,
     fontStack: fontStack,
     fontHref: fontHref,
     onAccent: onAccent,
     luminance: luminance,
     defaultShape: shape
-  };
-})(typeof window !== "undefined" ? window : this);
+  });
+})();

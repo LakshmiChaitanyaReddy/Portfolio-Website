@@ -1,0 +1,6 @@
+# This repo is a public GitHub Pages site — everything committed here is
+# world-readable. Keep local tooling and OS cruft out of it.
+.claude/
+.DS_Store
+*.swp
+node_modules/
