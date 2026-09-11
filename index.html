@@ -690,6 +690,24 @@ dialog.pdf-dialog::backdrop { background: rgba(0,0,0,.55); backdrop-filter: blur
 .pdf-note { font-size: .8rem; color: var(--text-dim); margin: 1rem 0 0; }
 
 /* ══════════════════════════════════════════════════════════════════════
+   TOAST — download progress and failures
+   ══════════════════════════════════════════════════════════════════════ */
+.toast {
+  position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%);
+  z-index: 300; max-width: min(92vw, 52ch); margin: 0;
+  padding: .75rem 1.05rem;
+  background: var(--surface); color: var(--text-mid);
+  border: 1px solid var(--border); border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm); box-shadow: var(--shadow);
+  font-size: .875rem; line-height: 1.5;
+}
+.toast.is-error { border-left-color: var(--danger); }
+.toast code {
+  font-family: var(--font-mono); font-size: .85em; color: var(--text);
+  background: var(--surface-2); padding: .1rem .3rem; border-radius: 4px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
    SCROLL REVEAL
    ══════════════════════════════════════════════════════════════════════ */
 .reveal {
@@ -864,6 +882,8 @@ body.print-preview.paper-letter .print-root { width: 216mm; min-height: 279mm; }
 
 <footer class="site-footer" id="contact" hidden></footer>
 
+<p class="toast" id="toast" role="status" aria-live="polite" hidden></p>
+
 <dialog class="pdf-dialog" id="pdf-dialog" aria-labelledby="pdf-dialog-title"></dialog>
 
 <div class="print-root" id="print-root" aria-hidden="true"></div>
@@ -882,6 +902,10 @@ body.print-preview.paper-letter .print-root { width: 216mm; min-height: 279mm; }
                   new URLSearchParams(window.location.search).has("preview");
   const DATA_URL = "data.json";
   const TH = window.PortfolioThemes || null;
+  if (!TH && window.console && console.warn) {
+    console.warn("[portfolio] themes.js didn't load — falling back to the built-in Graphite palette. " +
+                 "Make sure themes.js is committed next to index.html.");
+  }
 
   let P = {}, profile = {}, EXPERIENCE = [], PROJECTS = [], SKILLS = [], CERTS = [], EDUCATION = [], CUSTOM = [];
   let TOTAL_MONTHS = 0, TOTAL_YEARS = "";
@@ -940,6 +964,79 @@ body.print-preview.paper-letter .print-root { width: 216mm; min-height: 279mm; }
 
   const slug = (s) => String(s || "").toLowerCase().trim()
     .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "section";
+
+  /* ====================================================================
+     1b. TOAST + GUARDED RESUME DOWNLOAD
+         A plain <a download> saves whatever bytes come back — including a
+         404 page — under the .pdf name you asked for. That failure is
+         invisible until someone opens the file, so check the response
+         first and say what's wrong instead.
+     ==================================================================== */
+  const toast = document.getElementById("toast");
+  let toastTimer = null;
+
+  function showToast(msg, isError, ms) {
+    if (toastTimer) { window.clearTimeout(toastTimer); toastTimer = null; }
+    clear(toast);
+    append(toast, Array.isArray(msg) ? msg : [msg]);
+    toast.classList.toggle("is-error", !!isError);
+    toast.setAttribute("role", isError ? "alert" : "status");
+    toast.hidden = false;
+    if (ms) toastTimer = window.setTimeout(function () { toast.hidden = true; }, ms);
+  }
+  function hideToast() {
+    if (toastTimer) { window.clearTimeout(toastTimer); toastTimer = null; }
+    toast.hidden = true;
+  }
+
+  function sameOrigin(url) {
+    try { return new URL(url, window.location.href).origin === window.location.origin; }
+    catch (e) { return false; }
+  }
+  function fileNameFrom(url) {
+    try {
+      const last = new URL(url, window.location.href).pathname.split("/").filter(Boolean).pop();
+      return last ? decodeURIComponent(last) : "resume.pdf";
+    } catch (e) { return "resume.pdf"; }
+  }
+
+  /* Keeps the real href so right-click → Save link as, middle-click and
+     the no-JS case all still work; only intercepts a plain left-click. */
+  function guardDownload(anchor, url) {
+    if (!sameOrigin(url)) return anchor;     // cross-origin: `download` is ignored anyway
+    anchor.addEventListener("click", function (e) {
+      if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      e.preventDefault();
+      showToast("Preparing the PDF…", false, 0);
+
+      fetch(url, { cache: "no-store" }).then(function (res) {
+        const type = (res.headers.get("content-type") || "").toLowerCase();
+        if (!res.ok) {
+          throw new Error("There's no file at " + url + " (HTTP " + res.status +
+            "). The PDF has to be committed to the repo at exactly that path — filenames are case-sensitive.");
+        }
+        if (type.indexOf("pdf") === -1) {
+          throw new Error(url + " returned " + (type.split(";")[0] || "an unknown type") +
+            " rather than a PDF. Check resumeUrl in data.json.");
+        }
+        return res.blob();
+      }).then(function (blob) {
+        const objUrl = URL.createObjectURL(blob);
+        const tmp = el("a", { href: objUrl, download: fileNameFrom(url) });
+        document.body.appendChild(tmp);
+        tmp.click();
+        document.body.removeChild(tmp);
+        window.setTimeout(function () { URL.revokeObjectURL(objUrl); }, 4000);
+        hideToast();
+      }).catch(function (err) {
+        // A TypeError here means the request never completed (offline, CORS,
+        // file://). That's not evidence the file is missing — let the browser try.
+        if (err && err.name === "TypeError") { hideToast(); window.location.href = url; return; }
+        showToast(String((err && err.message) || err), true, 12000);
+      });
+    });
+    return anchor;
+  }
 
   /* ====================================================================
      2. DATES
@@ -1097,8 +1194,10 @@ body.print-preview.paper-letter .print-root { width: 216mm; min-height: 279mm; }
         el("div", { class: "hero-cta reveal", style: "--delay:280ms" },
           has(profile.email) && el("a", { class: "btn btn-primary", href: "mailto:" + profile.email },
             icon("mail"), "Get in touch"),
-          has(profile.resumeUrl) && el("a", { class: "btn btn-ghost", href: profile.resumeUrl, download: true },
-            icon("download"), "Download Resume"),
+          has(profile.resumeUrl) && guardDownload(
+            el("a", { class: "btn btn-ghost", href: profile.resumeUrl, download: true },
+              icon("download"), "Download Resume"),
+            profile.resumeUrl),
           canPrint && el("button", { class: "btn btn-ghost", type: "button", onclick: openPdfDialog },
             icon("printer"), "Save as PDF")
         ),
@@ -1384,7 +1483,7 @@ body.print-preview.paper-letter .print-root { width: 216mm; min-height: 279mm; }
      .concat(arr(profile.links).filter((l) => has(l.url)).map((l) => ({
         href: l.url, icon: l.icon || "link", text: l.label || l.url, external: true })))
      .concat(has(profile.resumeUrl)
-        ? [{ href: profile.resumeUrl, icon: "file-down", text: "Download Resume (PDF)", download: true }] : []);
+        ? [{ href: profile.resumeUrl, icon: "file-down", text: "Download Resume (PDF)", download: true, guard: true }] : []);
 
     append(footer, [el("div", { class: "container" },
       el("div", { class: "footer-cta reveal" },
@@ -1392,13 +1491,15 @@ body.print-preview.paper-letter .print-root { width: 216mm; min-height: 279mm; }
         el("h2", { id: "contact-title", text: "Let's talk ServiceNow" }),
         el("p", { text: "Happy to discuss platform work, integration design or a role — the inbox is the fastest way to reach me." })),
       items.length > 0 && el("ul", { class: "contact-list reveal", role: "list", style: "--delay:80ms" },
-        items.map((it) => el("li", null,
-          el("a", {
+        items.map(function (it) {
+          const a = el("a", {
             href: it.href,
             target: it.external ? "_blank" : null,
             rel: it.external ? "noopener noreferrer" : null,
             download: it.download ? true : null
-          }, icon(it.icon), el("span", { text: it.text }))))),
+          }, icon(it.icon), el("span", { text: it.text }));
+          return el("li", null, it.guard ? guardDownload(a, it.href) : a);
+        })),
       el("div", { class: "footer-bottom" },
         el("p", { text: "© " + new Date().getFullYear() + (has(profile.name) ? " " + profile.name : "") }),
         el("a", { href: "#top", text: "Back to top ↑" }))
