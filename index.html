@@ -28,7 +28,8 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- Boot fonts for the skeleton. themes.js swaps in the chosen pairing. -->
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 <!-- Icons. Every icon is aria-hidden and paired with real text, so a
      blocked CDN costs you glyphs and nothing else. -->
@@ -36,82 +37,86 @@
 
 <style>
 /* ══════════════════════════════════════════════════════════════════════
-   THEME TOKENS — re-theme the whole site by editing this block only.
-   Dark is the default. The [data-theme="light"] block below overrides
-   COLOURS ONLY, so layout and spacing stay defined in one place.
-   admin.html carries an identical copy of both blocks.
+   THEME TOKENS
+   These are DEFAULTS ONLY. themes.js writes the active theme as inline
+   custom properties on <html>, which beat everything here — so the site
+   still renders correctly if themes.js or data.json fails to load.
+
+   To change the look, use admin.html's Theme tab (or edit themes.js).
+   To change the fallback, edit this block.
    ══════════════════════════════════════════════════════════════════════ */
 :root {
-  /* ── Accent: the single colour used for links, buttons, the timeline,
-        active nav items and active filters. Change these three together. */
-  --accent:        #5cc8a8;                    /* primary accent          */
-  --accent-strong: #7fe0c2;                    /* hover / brighter state  */
-  --accent-soft:   rgba(92, 200, 168, 0.12);   /* tinted backgrounds      */
-  --on-accent:     #06120e;                    /* text ON a filled accent */
+  /* ── Accent. Only --accent is authored; the rest derive from it, which
+        is why changing one colour in the theme builder just works. ───── */
+  --accent:        #5cc8a8;
+  --accent-lift:   #ffffff;                                           /* mixed into accent for hover  */
+  --accent-strong: color-mix(in srgb, var(--accent) 78%, var(--accent-lift));
+  --accent-soft:   color-mix(in srgb, var(--accent) 12%, transparent);
+  --on-accent:     #06120e;                                           /* text ON a filled accent      */
 
-  /* ── Feedback colours (errors, warnings, success) ───────────────────── */
-  --danger:        #ff6b6b;
-  --warn:          #e3b341;
+  /* ── Feedback ───────────────────────────────────────────────────────── */
+  --danger: #ff6b6b;
+  --warn:   #e3b341;
 
-  /* ── Surfaces: page → alternating section → card → chip ─────────────── */
+  /* ── Surfaces: page → alternating band → card → chip ─────────────────── */
   --bg:        #0d1117;
   --bg-alt:    #10161f;
   --surface:   #151c26;
   --surface-2: #1b2430;
+  --header-bg: color-mix(in srgb, var(--bg) 80%, transparent);
 
   /* ── Text: three levels of emphasis ─────────────────────────────────── */
-  --text:      #e8edf4;   /* headings, primary copy   */
-  --text-mid:  #b3bdcb;   /* body copy                */
-  --text-dim:  #7d8899;   /* meta, captions, labels   */
+  --text:      #e8edf4;
+  --text-mid:  #b3bdcb;
+  --text-dim:  #7d8899;
 
-  /* ── Lines, shadow, sticky header backdrop ──────────────────────────── */
-  --border:    #232d3b;
-  --border-2:  #303d4e;                        /* hover / focus borders   */
-  --shadow:    0 1px 2px rgba(0,0,0,.4), 0 12px 32px rgba(0,0,0,.35);
-  --header-bg: rgba(13, 17, 23, 0.78);
+  /* ── Lines & shadow ─────────────────────────────────────────────────── */
+  --border:   #232d3b;
+  --border-2: #303d4e;
+  --shadow:   0 1px 2px rgba(0,0,0,.4), 0 12px 32px rgba(0,0,0,.35);
 
-  /* ── Typography: display / body / mono ──────────────────────────────── */
+  /* ── Typography ─────────────────────────────────────────────────────── */
   --font-display: "Space Grotesk", system-ui, sans-serif;
   --font-body:    "Inter", system-ui, -apple-system, sans-serif;
   --font-mono:    "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+  --fs-scale:     1;          /* multiplies every rem on the page   */
+  --h-scale:      1;          /* multiplies heading sizes only      */
+  --line-height:  1.7;
+  --h-weight:     600;
+  --h-tracking:   -0.02em;
 
-  /* ── Spacing & layout ───────────────────────────────────────────────── */
-  --maxw:      1080px;                          /* content max width      */
-  --radius:    14px;                            /* cards                  */
-  --radius-sm: 8px;                             /* buttons, chips         */
-  --gutter:    clamp(1.25rem, 5vw, 2.5rem);     /* page side padding      */
-  --section-y: clamp(4.5rem, 10vw, 7.5rem);     /* section vertical pad   */
-  --gap:       1.1rem;                          /* grid gap               */
-  --nav-h:     68px;                            /* sticky header height   */
+  /* ── Shape & density ────────────────────────────────────────────────── */
+  --maxw:        1080px;
+  --radius:      14px;
+  --radius-sm:   8px;
+  --chip-radius: 6px;
+  --gutter:      clamp(1.25rem, 5vw, 2.5rem);
+  --section-y:   clamp(4.5rem, 10vw, 7.5rem);
+  --gap:         1.1rem;
+  --nav-h:       68px;
 
   /* ── Motion ─────────────────────────────────────────────────────────── */
   --ease:  cubic-bezier(.22,.61,.36,1);
   --speed: .35s;
 }
 
-/* ── LIGHT THEME — colour overrides only ──────────────────────────────── */
+/* Fallback light palette, used only if themes.js doesn't load. */
 [data-theme="light"] {
-  --accent:        #0f8a6a;
-  --accent-strong: #0b6e54;
-  --accent-soft:   rgba(15, 138, 106, 0.10);
-  --on-accent:     #ffffff;
-
-  --danger:        #c62828;
-  --warn:          #8a6100;
-
+  --accent:      #0f8a6a;
+  --accent-lift: #000000;
+  --on-accent:   #ffffff;
+  --danger:      #c62828;
+  --warn:        #8a6100;
   --bg:        #fbfbf9;
   --bg-alt:    #f3f4f1;
   --surface:   #ffffff;
   --surface-2: #f1f3f0;
-
   --text:      #14181d;
   --text-mid:  #414a55;
   --text-dim:  #6b7480;
-
   --border:    #e2e4e0;
   --border-2:  #c9cdc7;
   --shadow:    0 1px 2px rgba(20,24,29,.05), 0 12px 28px rgba(20,24,29,.07);
-  --header-bg: rgba(251, 251, 249, 0.82);
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -121,6 +126,7 @@
 [hidden] { display: none !important; }
 
 html {
+  font-size: calc(100% * var(--fs-scale));
   scroll-behavior: smooth;
   scroll-padding-top: calc(var(--nav-h) + 20px);
   -webkit-text-size-adjust: 100%;
@@ -132,7 +138,7 @@ body {
   color: var(--text-mid);
   font-family: var(--font-body);
   font-size: 1rem;
-  line-height: 1.7;
+  line-height: var(--line-height);
   -webkit-font-smoothing: antialiased;
   transition: background-color var(--speed) var(--ease), color var(--speed) var(--ease);
 }
@@ -142,12 +148,13 @@ h1, h2, h3, h4 {
   color: var(--text);
   line-height: 1.18;
   margin: 0 0 .6rem;
-  letter-spacing: -0.02em;
-  font-weight: 600;
+  letter-spacing: var(--h-tracking);
+  font-weight: var(--h-weight);
 }
-h1 { font-size: clamp(2.15rem, 6.4vw, 3.55rem); font-weight: 700; }
-h2 { font-size: clamp(1.55rem, 3.6vw, 2.1rem); }
-h3 { font-size: 1.125rem; }
+h1 { font-size: calc(clamp(2.15rem, 6.4vw, 3.55rem) * var(--h-scale)); }
+h2 { font-size: calc(clamp(1.55rem, 3.6vw, 2.1rem) * var(--h-scale)); }
+h3 { font-size: calc(1.125rem * var(--h-scale)); }
+h4 { font-size: calc(.95rem * var(--h-scale)); }
 p  { margin: 0 0 1rem; }
 ul, ol { margin: 0; padding: 0; list-style: none; }
 
@@ -156,6 +163,7 @@ a:hover { color: var(--accent-strong); }
 
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
 
+img { max-width: 100%; height: auto; display: block; }
 svg { vertical-align: middle; }
 .icon { width: 1em; height: 1em; stroke-width: 2; }
 
@@ -234,7 +242,7 @@ svg { vertical-align: middle; }
 }
 .mobile-menu a.is-active { color: var(--accent); }
 
-@media (min-width: 900px) {
+@media (min-width: 960px) {
   .nav-links { display: flex; }
   #menu-toggle, .mobile-menu { display: none !important; }
 }
@@ -260,10 +268,7 @@ svg { vertical-align: middle; }
 /* ══════════════════════════════════════════════════════════════════════
    LOADING SKELETON + ERROR STATE
    ══════════════════════════════════════════════════════════════════════ */
-.sk {
-  position: relative; overflow: hidden;
-  background: var(--surface-2); border-radius: 6px;
-}
+.sk { position: relative; overflow: hidden; background: var(--surface-2); border-radius: 6px; }
 .sk::after {
   content: ""; position: absolute; inset: 0; transform: translateX(-100%);
   background: linear-gradient(90deg, transparent, var(--surface), transparent);
@@ -293,7 +298,7 @@ svg { vertical-align: middle; }
   border-radius: var(--radius); background: var(--surface);
   padding: 1.75rem 1.85rem; max-width: 65ch;
 }
-.error-panel h2 { font-size: 1.35rem; }
+.error-panel h2 { font-size: calc(1.35rem * var(--h-scale)); }
 .error-panel code {
   font-family: var(--font-mono); font-size: .82em;
   background: var(--surface-2); padding: .12rem .4rem; border-radius: 4px; color: var(--text);
@@ -323,7 +328,7 @@ section { padding-block: var(--section-y); }
 .chips { display: flex; flex-wrap: wrap; gap: .4rem; }
 .chip {
   font-family: var(--font-mono); font-size: .78rem;
-  padding: .3rem .6rem; border-radius: 6px;
+  padding: .3rem .6rem; border-radius: var(--chip-radius);
   background: var(--surface-2); border: 1px solid var(--border);
   color: var(--text-mid); white-space: nowrap;
 }
@@ -339,6 +344,13 @@ section { padding-block: var(--section-y); }
   pointer-events: none;
 }
 .hero > .container { position: relative; }
+
+.hero-photo {
+  width: clamp(88px, 14vw, 116px); aspect-ratio: 1;
+  border-radius: 50%; object-fit: cover;
+  border: 1px solid var(--border-2);
+  margin-bottom: 1.5rem;
+}
 
 .hero-tag {
   display: inline-flex; align-items: center; gap: .6rem;
@@ -356,7 +368,7 @@ section { padding-block: var(--section-y); }
 
 .hero h1 { max-width: 15ch; }
 .hero-role {
-  font-family: var(--font-display); font-size: clamp(1.05rem, 2.6vw, 1.4rem);
+  font-family: var(--font-display); font-size: calc(clamp(1.05rem, 2.6vw, 1.4rem) * var(--h-scale));
   font-weight: 500; color: var(--accent); margin: .5rem 0 1.15rem;
 }
 .hero-pitch { font-size: clamp(1.02rem, 2vw, 1.15rem); max-width: 60ch; }
@@ -377,7 +389,7 @@ section { padding-block: var(--section-y); }
 .hero-stats > div { background: var(--bg); padding: 1.25rem 1.35rem; }
 .hero-stats dt {
   font-family: var(--font-display); font-weight: 700;
-  font-size: clamp(1.4rem, 3.4vw, 1.85rem); color: var(--text); letter-spacing: -0.02em;
+  font-size: calc(clamp(1.4rem, 3.4vw, 1.85rem) * var(--h-scale)); color: var(--text); letter-spacing: var(--h-tracking);
 }
 .hero-stats dd { margin: .2rem 0 0; font-size: .8rem; color: var(--text-dim); line-height: 1.45; }
 @media (min-width: 720px) { .hero-stats { grid-template-columns: repeat(4, 1fr); } }
@@ -412,11 +424,11 @@ section { padding-block: var(--section-y); }
   transition: border-color .25s var(--ease), transform .25s var(--ease);
 }
 .skill-card:hover { border-color: var(--border-2); transform: translateY(-2px); }
-.skill-card h3 { display: flex; align-items: center; gap: .6rem; font-size: 1rem; margin-bottom: 1rem; }
+.skill-card h3 { display: flex; align-items: center; gap: .6rem; font-size: calc(1rem * var(--h-scale)); margin-bottom: 1rem; }
 .skill-card h3 .icon { color: var(--accent); width: 1.05em; height: 1.05em; }
 
 /* ══════════════════════════════════════════════════════════════════════
-   EXPERIENCE TIMELINE
+   TIMELINE (experience + custom timeline sections)
    ══════════════════════════════════════════════════════════════════════ */
 .timeline { position: relative; padding-left: 1.9rem; }
 .timeline::before {
@@ -485,8 +497,16 @@ section { padding-block: var(--section-y); }
 }
 .project-card:hover { border-color: var(--border-2); transform: translateY(-3px); box-shadow: var(--shadow); }
 .project-card.is-featured { padding: 1.85rem 1.95rem 1.95rem; border-color: var(--border-2); }
-.project-card.is-featured h3 { font-size: 1.35rem; }
+.project-card.is-featured h3 { font-size: calc(1.35rem * var(--h-scale)); }
 .project-card.is-featured .project-blurb { font-size: 1.02rem; }
+
+.project-cover {
+  width: calc(100% + 3.1rem); margin: -1.45rem -1.55rem 1.2rem;
+  border-radius: var(--radius) var(--radius) 0 0;
+  aspect-ratio: 16 / 9; object-fit: cover;
+  border-bottom: 1px solid var(--border);
+}
+.project-card.is-featured .project-cover { width: calc(100% + 3.9rem); margin: -1.85rem -1.95rem 1.4rem; }
 
 .project-top { display: flex; align-items: center; gap: .7rem; margin-bottom: .7rem; }
 .project-num { font-family: var(--font-mono); font-size: .75rem; color: var(--accent); letter-spacing: .08em; }
@@ -513,6 +533,54 @@ section { padding-block: var(--section-y); }
 .project-card .chips { margin-top: auto; padding-top: .35rem; }
 
 /* ══════════════════════════════════════════════════════════════════════
+   CUSTOM SECTIONS — five layouts, all driven from data.json
+   ══════════════════════════════════════════════════════════════════════ */
+.custom-grid { display: grid; gap: var(--gap); grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
+.custom-card {
+  display: flex; flex-direction: column;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface); padding: 1.4rem 1.5rem 1.5rem;
+  transition: border-color .25s var(--ease), transform .25s var(--ease);
+}
+.custom-card:hover { border-color: var(--border-2); transform: translateY(-2px); }
+.custom-card h3 { margin-bottom: .25rem; }
+.custom-cover {
+  width: calc(100% + 3rem); margin: -1.4rem -1.5rem 1.15rem;
+  border-radius: var(--radius) var(--radius) 0 0;
+  aspect-ratio: 16 / 9; object-fit: cover; border-bottom: 1px solid var(--border);
+}
+.custom-meta { font-family: var(--font-mono); font-size: .78rem; color: var(--text-dim); margin: 0 0 .6rem; }
+.custom-sub { color: var(--accent); font-weight: 600; font-size: .9rem; margin: 0 0 .5rem; }
+.custom-body { font-size: .93rem; margin-bottom: .9rem; }
+.custom-card .chips, .row-item .chips { margin-top: auto; padding-top: .4rem; }
+.custom-links { display: flex; flex-wrap: wrap; gap: .9rem; font-size: .85rem; margin-bottom: .7rem; }
+.custom-links a { display: inline-flex; align-items: center; gap: .35rem; }
+
+.row-list { display: grid; }
+.row-item {
+  display: grid; gap: .15rem .9rem;
+  padding: 1.1rem 0; border-bottom: 1px solid var(--border);
+}
+.row-item:first-child { padding-top: 0; }
+.row-item:last-child { border-bottom: 0; padding-bottom: 0; }
+.row-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: .3rem .8rem; }
+.row-top h3 { margin: 0; font-size: calc(1.02rem * var(--h-scale)); }
+.row-meta { margin-left: auto; font-family: var(--font-mono); font-size: .78rem; color: var(--text-dim); white-space: nowrap; }
+.row-sub { font-size: .875rem; color: var(--accent); margin: 0; }
+.row-body { font-size: .93rem; margin: .35rem 0 0; }
+
+.prose-block { max-width: 68ch; }
+.prose-block h3 { margin-top: 1.8rem; }
+.prose-block h3:first-child { margin-top: 0; }
+
+.gallery-grid { display: grid; gap: var(--gap); grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
+.gallery-figure { margin: 0; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
+.gallery-figure img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.gallery-figure figcaption { padding: .8rem 1rem 1rem; font-size: .875rem; }
+.gallery-figure figcaption strong { display: block; color: var(--text); font-weight: 600; margin-bottom: .15rem; }
+.gallery-figure figcaption span { color: var(--text-dim); font-size: .82rem; }
+
+/* ══════════════════════════════════════════════════════════════════════
    CERTIFICATIONS + EDUCATION
    ══════════════════════════════════════════════════════════════════════ */
 .cert-grid { display: grid; gap: var(--gap); grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
@@ -528,7 +596,7 @@ section { padding-block: var(--section-y); }
   width: 42px; height: 42px; border-radius: 10px;
   background: var(--accent-soft); color: var(--accent); font-size: 1.15rem;
 }
-.cert-card h3 { font-size: 1rem; margin-bottom: .2rem; }
+.cert-card h3 { font-size: calc(1rem * var(--h-scale)); margin-bottom: .2rem; }
 .cert-card p { margin: 0; font-size: .85rem; color: var(--text-dim); }
 .cert-code { font-family: var(--font-mono); font-size: .78rem; color: var(--accent); }
 .cert-verify { display: inline-flex; align-items: center; gap: .3rem; font-size: .82rem; margin-top: .35rem; }
@@ -578,6 +646,50 @@ section { padding-block: var(--section-y); }
 .footer-bottom a:hover { color: var(--accent); }
 
 /* ══════════════════════════════════════════════════════════════════════
+   PDF DIALOG
+   ══════════════════════════════════════════════════════════════════════ */
+dialog.pdf-dialog {
+  width: min(560px, calc(100vw - 2rem));
+  border: 1px solid var(--border-2); border-radius: var(--radius);
+  background: var(--surface); color: var(--text-mid);
+  padding: 0; box-shadow: var(--shadow);
+}
+dialog.pdf-dialog::backdrop { background: rgba(0,0,0,.55); backdrop-filter: blur(2px); }
+.pdf-dialog form { padding: 1.5rem 1.6rem 1.2rem; margin: 0; }
+.pdf-dialog h2 { font-size: calc(1.25rem * var(--h-scale)); margin-bottom: .3rem; }
+.pdf-dialog > form > p { font-size: .875rem; color: var(--text-dim); }
+.pdf-dialog fieldset { border: 0; padding: 0; margin: 1.2rem 0 0; }
+.pdf-dialog legend {
+  font-family: var(--font-mono); font-size: .72rem; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--text-dim); padding: 0; margin-bottom: .55rem;
+}
+.pdf-opt {
+  display: flex; gap: .7rem; align-items: flex-start;
+  padding: .65rem .8rem; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); margin-bottom: .4rem; cursor: pointer;
+  transition: border-color .2s var(--ease), background-color .2s var(--ease);
+}
+.pdf-opt:hover { border-color: var(--border-2); background: var(--surface-2); }
+.pdf-opt:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.pdf-opt input { margin-top: .3rem; accent-color: var(--accent); flex: none; }
+.pdf-opt strong { display: block; color: var(--text); font-size: .92rem; font-weight: 600; }
+.pdf-opt span { font-size: .82rem; color: var(--text-dim); }
+.pdf-paper { display: flex; gap: .4rem; }
+.pdf-paper label {
+  flex: 1; text-align: center; padding: .5rem; cursor: pointer;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  font-family: var(--font-mono); font-size: .8rem;
+}
+.pdf-paper label:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.pdf-paper input { position: absolute; opacity: 0; pointer-events: none; }
+.pdf-actions {
+  display: flex; justify-content: flex-end; gap: .6rem;
+  margin: 1.4rem -1.6rem -1.2rem; padding: 1rem 1.6rem 1.2rem;
+  border-top: 1px solid var(--border);
+}
+.pdf-note { font-size: .8rem; color: var(--text-dim); margin: 1rem 0 0; }
+
+/* ══════════════════════════════════════════════════════════════════════
    SCROLL REVEAL
    ══════════════════════════════════════════════════════════════════════ */
 .reveal {
@@ -597,9 +709,95 @@ section { padding-block: var(--section-y); }
   .sk::after { animation: none; }
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   PRINT / PDF
+   A separate resume document is built from the same data and swapped in
+   for printing. Real text, real links, real page breaks — no rasterising.
+   ══════════════════════════════════════════════════════════════════════ */
+.print-root {
+  --pr-text: #111; --pr-mid: #333; --pr-dim: #666; --pr-line: #c9c9c9;
+  --pr-accent: var(--accent);
+  display: none;
+  background: #fff; color: var(--pr-text);
+  font-family: var(--font-body); font-size: 10pt; line-height: 1.45;
+}
+.print-root h1, .print-root h2, .print-root h3 { color: var(--pr-text); letter-spacing: -0.01em; }
+.print-root a { color: inherit; text-decoration: none; }
+
+.pr-head { margin-bottom: 5mm; }
+.pr-head h1 { font-size: 21pt; margin: 0 0 1mm; line-height: 1.1; }
+.pr-title { font-size: 11pt; color: var(--pr-accent); font-weight: 600; margin: 0 0 2mm; }
+.pr-contact { font-size: 8.6pt; color: var(--pr-mid); margin: 0; }
+.pr-contact span::after { content: " · "; color: var(--pr-dim); }
+.pr-contact span:last-child::after { content: ""; }
+.pr-summary { font-size: 9.4pt; color: var(--pr-mid); margin: 3mm 0 0; max-width: 58em; }
+
+.pr-sec { margin-top: 6mm; break-inside: auto; }
+.pr-sec > h2 {
+  font-size: 9pt; text-transform: uppercase; letter-spacing: .12em;
+  margin: 0 0 2.5mm; padding-bottom: 1mm;
+  border-bottom: .6pt solid var(--pr-line);
+}
+.pr-entry { margin-bottom: 3.6mm; break-inside: avoid; }
+.pr-entry:last-child { margin-bottom: 0; }
+.pr-entry-top { display: flex; align-items: baseline; gap: 3mm; }
+.pr-entry-top h3 { font-size: 10.2pt; margin: 0; flex: 1; }
+.pr-when { font-size: 8.4pt; color: var(--pr-dim); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pr-where { font-size: 9pt; color: var(--pr-accent); font-weight: 600; margin: .4mm 0 1.2mm; }
+.pr-where .pr-loc { color: var(--pr-dim); font-weight: 400; }
+.pr-bullets { margin: 0; padding: 0; }
+.pr-bullets li { position: relative; padding-left: 3.6mm; font-size: 9.2pt; margin-bottom: .9mm; color: var(--pr-mid); }
+.pr-bullets li::before { content: "•"; position: absolute; left: 0; color: var(--pr-accent); }
+.pr-bullets strong { color: var(--pr-text); }
+.pr-tags { font-size: 8.2pt; color: var(--pr-dim); margin: 1mm 0 0; font-family: var(--font-mono); }
+.pr-kv { font-size: 9.2pt; margin: 0 0 1.6mm; color: var(--pr-mid); break-inside: avoid; }
+.pr-kv strong { color: var(--pr-text); }
+
+.pr-body { display: block; }
+.pr-rail { margin-top: 6mm; }
+
+/* — Sidebar: contact, skills, certs and education in a left rail — */
+.pdf-sidebar .pr-body { display: grid; grid-template-columns: 33% 1fr; gap: 0 7mm; }
+.pdf-sidebar .pr-rail { order: -1; margin-top: 0; border-right: .6pt solid var(--pr-line); padding-right: 6mm; }
+.pdf-sidebar .pr-rail .pr-sec:first-child { margin-top: 0; }
+.pdf-sidebar .pr-main .pr-sec:first-child { margin-top: 0; }
+
+/* — Classic: centred header, serif headings — */
+.pdf-classic .pr-head { text-align: center; border-bottom: 1.2pt solid var(--pr-text); padding-bottom: 4mm; }
+.pdf-classic .pr-summary { margin-inline: auto; text-align: center; }
+.pdf-classic h1, .pdf-classic h2, .pdf-classic h3 { font-family: var(--font-display); }
+.pdf-classic .pr-sec > h2 { text-align: center; border-bottom: 0; letter-spacing: .18em; }
+.pdf-classic { line-height: 1.55; }
+
+/* — Timeline: dates in a left gutter with a rule — */
+.pdf-timeline .pr-entry { display: grid; grid-template-columns: 26mm 1fr; gap: 0 4mm; }
+.pdf-timeline .pr-entry-top { display: block; }
+.pdf-timeline .pr-when { grid-column: 1; grid-row: 1 / span 4; padding-top: .6mm; }
+.pdf-timeline .pr-entry > :not(.pr-when) { grid-column: 2; border-left: .6pt solid var(--pr-line); padding-left: 4mm; margin-left: -.5mm; }
+.pdf-timeline .pr-entry-top .pr-when { display: none; }
+
+/* — Minimal: no colour, no rules, no chips — */
+.pdf-minimal { --pr-accent: #111; }
+.pdf-minimal .pr-sec > h2 { border-bottom: 0; padding-bottom: 0; letter-spacing: .16em; }
+.pdf-minimal .pr-bullets li::before { content: "–"; }
+.pdf-minimal .pr-tags { display: none; }
+.pdf-minimal .pr-where { color: var(--pr-text); }
+
+/* Screen-side print preview (used by admin.html's Preview tab) */
+body.print-preview { background: #666; }
+body.print-preview > *:not(.print-root) { display: none !important; }
+body.print-preview .print-root {
+  display: block; width: 210mm; min-height: 297mm;
+  margin: 8mm auto; padding: 14mm;
+  box-shadow: 0 4px 24px rgba(0,0,0,.4);
+}
+body.print-preview.paper-letter .print-root { width: 216mm; min-height: 279mm; }
+
 @media print {
-  .site-header, .hero::before, .filter-bar, .filter-status { display: none; }
-  body { background: #fff; color: #000; }
+  body > *:not(.print-root) { display: none !important; }
+  .print-root { display: block !important; }
+  a[href^="http"]::after { content: ""; }
+  .pr-entry, .pr-kv, .gallery-figure { break-inside: avoid; }
 }
 </style>
 </head>
@@ -616,9 +814,8 @@ section { padding-block: var(--section-y); }
 </noscript>
 
 <!-- ══════════════════════════════════════════════════════════════════════
-     Everything below is an empty shell. Nav links, sections and the footer
-     are generated from data.json at load. Edit content in data.json (or
-     through admin.html) — never here.
+     Empty shells. Nav links, sections, the footer and the print document
+     are all generated from data.json. Edit content there (or in admin.html).
      ══════════════════════════════════════════════════════════════════ -->
 <header class="site-header" id="site-header">
   <div class="container">
@@ -642,7 +839,6 @@ section { padding-block: var(--section-y); }
 <p class="visually-hidden" id="load-status" role="status" aria-live="polite">Loading portfolio…</p>
 
 <main id="main" aria-busy="true">
-  <!-- Loading skeleton: static markup so it paints before any script runs -->
   <div id="skeleton" class="hero" aria-hidden="true">
     <div class="container">
       <div class="sk sk-pill"></div>
@@ -668,6 +864,11 @@ section { padding-block: var(--section-y); }
 
 <footer class="site-footer" id="contact" hidden></footer>
 
+<dialog class="pdf-dialog" id="pdf-dialog" aria-labelledby="pdf-dialog-title"></dialog>
+
+<div class="print-root" id="print-root" aria-hidden="true"></div>
+
+<script src="themes.js"></script>
 <script>
 (function () {
   "use strict";
@@ -680,19 +881,18 @@ section { padding-block: var(--section-y); }
   const PREVIEW = window.parent !== window &&
                   new URLSearchParams(window.location.search).has("preview");
   const DATA_URL = "data.json";
+  const TH = window.PortfolioThemes || null;
 
-  /* Live state for the current render */
-  let P = {}, profile = {}, EXPERIENCE = [], PROJECTS = [], SKILLS = [], CERTS = [], EDUCATION = [];
+  let P = {}, profile = {}, EXPERIENCE = [], PROJECTS = [], SKILLS = [], CERTS = [], EDUCATION = [], CUSTOM = [];
   let TOTAL_MONTHS = 0, TOTAL_YEARS = "";
+  let themeMode = "dark";
   let revealObserver = null, sectionObserver = null;
+  let pdfChoice = { template: "compact", paper: "a4" };
 
   const arr = (v) => (Array.isArray(v) ? v.filter(Boolean) : []);
 
   /* ====================================================================
      1. OPTIONAL-SAFE HELPERS
-        has()  → is there anything worth rendering?
-        el()   → DOM builder; null/false/'' children are dropped, so
-                 `has(x) && el(...)` is the standard optional pattern.
      ==================================================================== */
   function has(v) {
     if (v == null || v === false) return false;
@@ -728,11 +928,25 @@ section { padding-block: var(--section-y); }
   const icon = (name) => (has(name) ? el("i", { class: "icon", "data-lucide": name, "aria-hidden": "true" }) : null);
   const clear = (node) => { while (node.firstChild) node.removeChild(node.firstChild); };
 
+  /* An image field is { src, alt }. No src → nothing renders. No alt →
+     treated as decorative (alt=""), which is correct for a bare photo. */
+  function image(img, cls) {
+    if (!img || !has(img.src)) return null;
+    return el("img", {
+      class: cls || null, src: img.src, alt: has(img.alt) ? img.alt : "",
+      loading: "lazy", decoding: "async"
+    });
+  }
+
+  const slug = (s) => String(s || "").toLowerCase().trim()
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "section";
+
   /* ====================================================================
-     2. DATES — parse "YYYY" / "YYYY-MM", format ranges, compute duration
+     2. DATES
      ==================================================================== */
   const MONTHS = ["January","February","March","April","May","June",
                   "July","August","September","October","November","December"];
+  const SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
   function parseYM(value) {
     if (!has(value)) return null;
@@ -743,21 +957,20 @@ section { padding-block: var(--section-y); }
 
   const ymIndex = (d) => d.y * 12 + ((d.m || 1) - 1);
 
-  function fmtYM(value) {
+  function fmtYM(value, short) {
     const d = parseYM(value);
-    if (!d) return has(value) ? String(value).trim() : "";   // pass odd formats through
-    return d.m ? MONTHS[d.m - 1] + " " + d.y : String(d.y);
+    if (!d) return has(value) ? String(value).trim() : "";
+    const names = short ? SHORT : MONTHS;
+    return d.m ? names[d.m - 1] + " " + d.y : String(d.y);
   }
 
-  // endDate null/missing → "Present"
-  function fmtRange(start, end) {
-    const s = fmtYM(start);
-    const e = has(end) ? fmtYM(end) : "Present";
+  function fmtRange(start, end, short) {
+    const s = fmtYM(start, short);
+    const e = has(end) ? fmtYM(end, short) : "Present";
     if (!s) return has(end) ? e : "";
     return s + " – " + e;
   }
 
-  // Inclusive month count, the way a CV counts it (May–Sep = 5 mo).
   function monthsBetween(start, end) {
     const s = parseYM(start);
     if (!s) return 0;
@@ -776,8 +989,8 @@ section { padding-block: var(--section-y); }
   }
 
   /* Total experience: earliest startDate → today. Never goes stale.
-     Shown to one decimal, floored (52 mo → "4.3"). Prefer a whole
-     number? Change the marked line in computeTotals(). */
+     One decimal, floored (52 mo → "4.3"). Want a whole number? Change
+     the marked line. */
   function computeTotals() {
     const starts = EXPERIENCE.map((j) => parseYM(j.startDate)).filter(Boolean);
     if (!starts.length) { TOTAL_MONTHS = 0; TOTAL_YEARS = ""; return; }
@@ -797,16 +1010,20 @@ section { padding-block: var(--section-y); }
       .replace(/\{\{\s*months\s*\}\}/g, String(TOTAL_MONTHS));
   }
 
-  // Returns text nodes / <strong> elements — no innerHTML anywhere.
-  function rich(str) {
+  function rich(str, doc) {
     if (!has(str)) return [];
+    const d = doc || document;
     return tokens(str).split(/\*\*([^*]+)\*\*/g).map(function (part, i) {
       if (!part) return null;
-      return i % 2 ? el("strong", null, part) : document.createTextNode(part);
+      if (i % 2 === 0) return d.createTextNode(part);
+      const strong = d.createElement("strong");
+      strong.textContent = part;
+      return strong;
     });
   }
 
-  /* Sort a copy, newest first. Never mutates the loaded data. */
+  const plain = (str) => (has(str) ? tokens(str).replace(/\*\*/g, "") : "");
+
   function byStartDesc(list, key) {
     return list.slice().sort(function (a, b) {
       const A = parseYM(a[key]), B = parseYM(b[key]);
@@ -822,7 +1039,7 @@ section { padding-block: var(--section-y); }
      ==================================================================== */
   function sectionHead(eyebrow, title, id, blurb) {
     return el("div", { class: "section-head reveal" },
-      el("p", { class: "eyebrow", text: eyebrow }),
+      has(eyebrow) && el("p", { class: "eyebrow", text: eyebrow }),
       el("h2", { id: id, text: title }),
       has(blurb) && el("p", null, tokens(blurb))
     );
@@ -831,8 +1048,15 @@ section { padding-block: var(--section-y); }
   function chipList(items, label) {
     if (!has(items)) return null;
     return el("ul", { class: "chips", role: "list", "aria-label": label || null },
-      arr(items).map((t) => el("li", { class: "chip", text: t }))
-    );
+      arr(items).map((t) => el("li", { class: "chip", text: t })));
+  }
+
+  function linkRow(links, cls) {
+    const usable = arr(links).filter((l) => has(l.url));
+    if (!usable.length) return null;
+    return el("p", { class: cls },
+      usable.map((l) => el("a", { href: l.url, target: "_blank", rel: "noopener noreferrer" },
+        icon(l.icon || "external-link"), l.label || l.url)));
   }
 
   function wrap(id, cls, labelledBy, children) {
@@ -851,8 +1075,11 @@ section { padding-block: var(--section-y); }
       SKILLS.length > 0 && { n: SKILLS.reduce((s, g) => s + arr(g.items).length, 0) + "", label: "Platform capabilities" }
     ].filter(Boolean);
 
+    const canPrint = has(profile.name) && (EXPERIENCE.length || PROJECTS.length || SKILLS.length);
+
     return el("section", { id: "top", class: "hero", "aria-labelledby": "hero-title" },
       el("div", { class: "container" },
+        image(profile.photo, "hero-photo reveal"),
         has(profile.status) && el("p", { class: "hero-tag reveal" },
           el("span", { class: "pulse", "aria-hidden": "true" }), profile.status),
 
@@ -866,11 +1093,14 @@ section { padding-block: var(--section-y); }
             CERTS.map((c) => c.abbr || c.name).filter(has).join(" · "))
         ),
 
-        (has(profile.email) || has(profile.resumeUrl)) && el("div", { class: "hero-cta reveal", style: "--delay:280ms" },
+        (has(profile.email) || has(profile.resumeUrl) || canPrint) &&
+        el("div", { class: "hero-cta reveal", style: "--delay:280ms" },
           has(profile.email) && el("a", { class: "btn btn-primary", href: "mailto:" + profile.email },
             icon("mail"), "Get in touch"),
           has(profile.resumeUrl) && el("a", { class: "btn btn-ghost", href: profile.resumeUrl, download: true },
-            icon("download"), "Download Resume")
+            icon("download"), "Download Resume"),
+          canPrint && el("button", { class: "btn btn-ghost", type: "button", onclick: openPdfDialog },
+            icon("printer"), "Save as PDF")
         ),
 
         stats.length > 0 && el("dl", { class: "hero-stats reveal", style: "--delay:340ms" },
@@ -909,9 +1139,7 @@ section { padding-block: var(--section-y); }
         SKILLS.map((group, i) =>
           el("article", { class: "skill-card reveal", style: "--delay:" + i * 80 + "ms" },
             el("h3", null, icon(group.icon), group.category || "Skills"),
-            chipList(group.items, group.category)
-          )
-        )
+            chipList(group.items, group.category)))
       )
     ]);
   }
@@ -936,8 +1164,7 @@ section { padding-block: var(--section-y); }
             },
             el("div", { class: "tl-head" },
               el("h3", { text: job.role || job.company || "Role" }),
-              has(range) && el("p", { class: "tl-date", text: range })
-            ),
+              has(range) && el("p", { class: "tl-date", text: range })),
             meta.length > 0 && el("p", { class: "tl-sub" },
               meta.reduce((acc, node, idx) => acc.concat(idx ? [el("span", { class: "tl-sep", text: "·" }), node] : [node]), [])),
             has(job.summary) && el("p", { class: "tl-summary" }, rich(job.summary)),
@@ -951,10 +1178,8 @@ section { padding-block: var(--section-y); }
   }
 
   function renderProjects() {
-    // featured first — Array.sort is stable, so data.json order holds within each group
     const ordered = PROJECTS.slice().sort((a, b) => (b.featured === true) - (a.featured === true));
 
-    // Filter buttons = union of every tech[] value, most-used first
     const counts = new Map();
     ordered.forEach((p) => arr(p.tech).forEach((t) => counts.set(t, (counts.get(t) || 0) + 1)));
     const techs = Array.from(counts.keys()).sort((a, b) => counts.get(b) - counts.get(a) || a.localeCompare(b));
@@ -972,19 +1197,16 @@ section { padding-block: var(--section-y); }
             class: "project-card reveal" + (p.featured ? " is-featured" : ""),
             style: "--delay:" + Math.min(i, 4) * 80 + "ms"
           },
+          image(p.image, "project-cover"),
           el("div", { class: "project-top" },
             el("span", { class: "project-num", text: String(i + 1).padStart(2, "0") }),
-            p.featured === true && el("span", { class: "featured-flag", text: "Featured" })
-          ),
+            p.featured === true && el("span", { class: "featured-flag", text: "Featured" })),
           el("h3", { text: p.title || "Project" }),
           has(p.blurb) && el("p", { class: "project-blurb" }, rich(p.blurb)),
           pap.length > 0 && el("dl", { class: "pap" },
             pap.map((row) => el("div", { class: row[2] || null },
               el("dt", { text: row[0] }), el("dd", null, rich(row[1]))))),
-          has(p.links) && el("p", { class: "project-links" },
-            arr(p.links).filter((l) => has(l.url)).map((l) =>
-              el("a", { href: l.url, target: "_blank", rel: "noopener noreferrer" },
-                icon(l.icon || "external-link"), l.label || l.url))),
+          linkRow(p.links, "project-links"),
           chipList(p.tech, (p.title || "Project") + " technologies")
         );
 
@@ -1013,8 +1235,7 @@ section { padding-block: var(--section-y); }
       },
       [null].concat(techs).map(function (tech) {
         const btn = el("button", {
-          type: "button",
-          class: "filter-btn",
+          type: "button", class: "filter-btn",
           "aria-pressed": String(tech === null),
           text: tech === null ? "All" : tech,
           onclick: function () { applyFilter(tech, btn); }
@@ -1068,8 +1289,7 @@ section { padding-block: var(--section-y); }
           return el("article", { class: "edu-card reveal", style: "--delay:" + i * 80 + "ms" },
             el("div", { class: "edu-top" },
               el("h3", { text: e.degree || e.institution || "Education" }),
-              has(range) && el("p", { class: "edu-date", text: range })
-            ),
+              has(range) && el("p", { class: "edu-date", text: range })),
             has(e.degree) && has(e.institution) && el("p", { text: e.institution }),
             has(e.detail) && el("p", { class: "edu-detail", text: e.detail })
           );
@@ -1078,14 +1298,91 @@ section { padding-block: var(--section-y); }
     ]);
   }
 
+  /* ── Custom sections: five layouts, chosen per section in data.json ── */
+  function renderCustomSection(sec, id) {
+    const items = arr(sec.items);
+    const layout = sec.layout || "cards";
+    const titleId = id + "-title";
+    const head = sectionHead(sec.eyebrow || sec.title, sec.title || "Section", titleId, sec.blurb);
+    let bodyNode;
+
+    if (layout === "timeline") {
+      bodyNode = el("ol", { class: "timeline" }, items.map(function (it, i) {
+        return el("li", { class: "tl-item reveal", style: "--delay:" + Math.min(i, 6) * 90 + "ms" },
+          el("div", { class: "tl-head" },
+            el("h3", { text: it.title || "Entry" }),
+            has(it.meta) && el("p", { class: "tl-date", text: it.meta })),
+          has(it.subtitle) && el("p", { class: "tl-sub" }, el("span", { class: "tl-company", text: it.subtitle })),
+          has(it.body) && el("p", { class: "tl-summary" }, rich(it.body)),
+          has(it.bullets) && el("ul", { class: "tl-list", role: "list" },
+            arr(it.bullets).map((b) => el("li", null, rich(b)))),
+          linkRow(it.links, "custom-links"),
+          chipList(it.tags, it.title));
+      }));
+
+    } else if (layout === "list") {
+      bodyNode = el("div", { class: "row-list" }, items.map(function (it, i) {
+        return el("article", { class: "row-item reveal", style: "--delay:" + Math.min(i, 8) * 60 + "ms" },
+          el("div", { class: "row-top" },
+            el("h3", { text: it.title || "Entry" }),
+            has(it.meta) && el("p", { class: "row-meta", text: it.meta })),
+          has(it.subtitle) && el("p", { class: "row-sub", text: it.subtitle }),
+          has(it.body) && el("p", { class: "row-body" }, rich(it.body)),
+          has(it.bullets) && el("ul", { class: "tl-list", role: "list", style: "margin-top:.5rem" },
+            arr(it.bullets).map((b) => el("li", null, rich(b)))),
+          linkRow(it.links, "custom-links"),
+          chipList(it.tags, it.title));
+      }));
+
+    } else if (layout === "prose") {
+      bodyNode = el("div", { class: "prose-block about-body reveal" }, items.map(function (it) {
+        return [
+          has(it.title) && el("h3", { text: it.title }),
+          has(it.subtitle) && el("p", { class: "custom-sub", text: it.subtitle }),
+          has(it.body) && el("p", null, rich(it.body)),
+          has(it.bullets) && el("ul", { class: "tl-list", role: "list" },
+            arr(it.bullets).map((b) => el("li", null, rich(b)))),
+          linkRow(it.links, "custom-links")
+        ];
+      }));
+
+    } else if (layout === "gallery") {
+      bodyNode = el("div", { class: "gallery-grid" }, items.map(function (it, i) {
+        const img = image(it.image, null);
+        if (!img && !has(it.title)) return null;
+        return el("figure", { class: "gallery-figure reveal", style: "--delay:" + Math.min(i, 8) * 70 + "ms" },
+          img,
+          (has(it.title) || has(it.body) || has(it.meta)) && el("figcaption", null,
+            has(it.title) && el("strong", { text: it.title }),
+            has(it.body) && el("span", { text: plain(it.body) }),
+            has(it.meta) && el("span", { text: (has(it.body) ? " · " : "") + it.meta })));
+      }).filter(Boolean));
+
+    } else {   // cards
+      bodyNode = el("div", { class: "custom-grid" }, items.map(function (it, i) {
+        return el("article", { class: "custom-card reveal", style: "--delay:" + Math.min(i, 6) * 80 + "ms" },
+          image(it.image, "custom-cover"),
+          has(it.meta) && el("p", { class: "custom-meta", text: it.meta }),
+          el("h3", { text: it.title || "Entry" }),
+          has(it.subtitle) && el("p", { class: "custom-sub", text: it.subtitle }),
+          has(it.body) && el("p", { class: "custom-body" }, rich(it.body)),
+          has(it.bullets) && el("ul", { class: "tl-list", role: "list", style: "margin-bottom:.9rem" },
+            arr(it.bullets).map((b) => el("li", null, rich(b)))),
+          linkRow(it.links, "custom-links"),
+          chipList(it.tags, it.title));
+      }));
+    }
+
+    return wrap(id, sec.altBackground === true ? "section-alt" : null, titleId, [head, bodyNode]);
+  }
+
   function renderContact(footer) {
     const items = [
       has(profile.email) && { href: "mailto:" + profile.email, icon: "mail", text: profile.email },
       has(profile.phone) && { href: "tel:" + String(profile.phone).replace(/[^\d+]/g, ""), icon: "phone", text: profile.phone }
     ].filter(Boolean)
      .concat(arr(profile.links).filter((l) => has(l.url)).map((l) => ({
-        href: l.url, icon: l.icon || "link", text: l.label || l.url, external: true
-     })))
+        href: l.url, icon: l.icon || "link", text: l.label || l.url, external: true })))
      .concat(has(profile.resumeUrl)
         ? [{ href: profile.resumeUrl, icon: "file-down", text: "Download Resume (PDF)", download: true }] : []);
 
@@ -1093,8 +1390,7 @@ section { padding-block: var(--section-y); }
       el("div", { class: "footer-cta reveal" },
         el("p", { class: "eyebrow", text: "Contact" }),
         el("h2", { id: "contact-title", text: "Let's talk ServiceNow" }),
-        el("p", { text: "Happy to discuss platform work, integration design or a role — the inbox is the fastest way to reach me." })
-      ),
+        el("p", { text: "Happy to discuss platform work, integration design or a role — the inbox is the fastest way to reach me." })),
       items.length > 0 && el("ul", { class: "contact-list reveal", role: "list", style: "--delay:80ms" },
         items.map((it) => el("li", null,
           el("a", {
@@ -1105,28 +1401,54 @@ section { padding-block: var(--section-y); }
           }, icon(it.icon), el("span", { text: it.text }))))),
       el("div", { class: "footer-bottom" },
         el("p", { text: "© " + new Date().getFullYear() + (has(profile.name) ? " " + profile.name : "") }),
-        el("a", { href: "#top", text: "Back to top ↑" })
-      )
+        el("a", { href: "#top", text: "Back to top ↑" }))
     )]);
     footer.setAttribute("aria-labelledby", "contact-title");
     footer.hidden = false;
   }
 
   /* ====================================================================
-     6. SECTION REGISTRY
-        Nav links and sections both come from this list. A section with
-        no data is never rendered and never appears in the nav.
+     6. SECTION LIST — built-ins + custom, ordered and filtered by data
      ==================================================================== */
-  const SECTIONS = [
-    { id: "about",          label: "About",          when: () => has(profile.about),   render: renderAbout },
-    { id: "skills",         label: "Skills",         when: () => SKILLS.length > 0,    render: renderSkills },
-    { id: "experience",     label: "Experience",     when: () => EXPERIENCE.length > 0, render: renderExperience },
-    { id: "projects",       label: "Projects",       when: () => PROJECTS.length > 0,  render: renderProjects },
-    { id: "certifications", label: "Certifications", when: () => CERTS.length > 0,     render: renderCertifications },
-    { id: "education",      label: "Education",      when: () => EDUCATION.length > 0, render: renderEducation },
-    { id: "contact",        label: "Contact",        footer: true,
-      when: () => has(profile.email) || has(profile.phone) || has(profile.links) }
-  ];
+  function buildSectionList() {
+    const builtins = [
+      { id: "about",          label: "About",          when: () => has(profile.about), render: renderAbout },
+      { id: "skills",         label: "Skills",         when: () => SKILLS.length > 0,  render: renderSkills },
+      { id: "experience",     label: "Experience",     when: () => EXPERIENCE.length > 0, render: renderExperience },
+      { id: "projects",       label: "Projects",       when: () => PROJECTS.length > 0, render: renderProjects },
+      { id: "certifications", label: "Certifications", when: () => CERTS.length > 0,   render: renderCertifications },
+      { id: "education",      label: "Education",      when: () => EDUCATION.length > 0, render: renderEducation }
+    ].filter(function (s) { try { return s.when(); } catch (e) { return false; } });
+
+    const used = {};
+    builtins.forEach((b) => { used[b.id] = true; });
+
+    const customs = CUSTOM.filter((s) => has(s.title) && arr(s.items).length > 0).map(function (sec) {
+      let id = slug(sec.id || sec.title);
+      while (used[id]) id = id + "-x";          // never collide with a built-in
+      used[id] = true;
+      return { id: id, label: sec.title, custom: sec, render: () => renderCustomSection(sec, id) };
+    });
+
+    const hidden = arr(P.hiddenSections).map(String);
+    const order = arr(P.sectionOrder).map(String);
+    const rank = (s) => {
+      const i = order.indexOf(s.id);
+      return i === -1 ? 9999 : i;               // unlisted sections keep natural order, at the end
+    };
+
+    const all = builtins.concat(customs)
+      .filter((s) => hidden.indexOf(s.id) === -1)
+      .map((s, i) => ({ s: s, i: i }))
+      .sort((a, b) => (rank(a.s) - rank(b.s)) || (a.i - b.i))
+      .map((x) => x.s);
+
+    const contactHasData = has(profile.email) || has(profile.phone) || has(profile.links);
+    if (contactHasData && hidden.indexOf("contact") === -1) {
+      all.push({ id: "contact", label: "Contact", footer: true });   // always last: it is the footer
+    }
+    return all;
+  }
 
   /* ====================================================================
      7. HEAD — title, meta, Open Graph, JSON-LD (schema.org Person)
@@ -1138,7 +1460,7 @@ section { padding-block: var(--section-y); }
 
   function renderHead() {
     const who = profile.shortName || profile.name;
-    const desc = has(profile.tagline) ? tokens(profile.tagline).replace(/\*\*/g, "") : "";
+    const desc = plain(profile.tagline);
     const url = has(profile.siteUrl) ? String(profile.siteUrl).replace(/\/$/, "") : "";
     const img = has(profile.ogImage) ? (url ? url + "/" + profile.ogImage : profile.ogImage) : "";
 
@@ -1155,7 +1477,6 @@ section { padding-block: var(--section-y); }
     setMeta('meta[name="twitter:image"]', "content", img);
     setMeta('link[rel="canonical"]', "href", url);
 
-    // ---- schema.org Person, built entirely from the data ----
     const loc = String(profile.location || "").split(",").map((s) => s.trim()).filter(Boolean);
     const current = EXPERIENCE.filter((j) => !has(j.endDate))[0];
     const person = { "@context": "https://schema.org", "@type": "Person" };
@@ -1166,7 +1487,8 @@ section { padding-block: var(--section-y); }
     if (has(profile.email)) person.email = "mailto:" + profile.email;
     if (has(profile.phone)) person.telephone = profile.phone;
     if (has(url)) person.url = url;
-    if (has(img)) person.image = img;
+    if (img) person.image = img;
+    else if (profile.photo && has(profile.photo.src)) person.image = profile.photo.src;
     if (loc.length) {
       person.address = { "@type": "PostalAddress", addressLocality: loc[0] };
       if (loc[1]) person.address.addressCountry = loc[1];
@@ -1193,7 +1515,176 @@ section { padding-block: var(--section-y); }
   }
 
   /* ====================================================================
-     8. RENDER — safe to call repeatedly (the Preview tab does exactly that)
+     8. THEME
+     ==================================================================== */
+  function applyCurrentTheme() {
+    document.documentElement.setAttribute("data-theme", themeMode);
+    if (!TH) return;
+    const resolved = TH.resolveTheme(P.theme || {});
+    TH.applyTheme(document, resolved, themeMode);
+    const meta = document.head.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", (resolved.vars[themeMode] || {})["--bg"] || "#0d1117");
+    const btn = document.getElementById("theme-toggle");
+    if (btn) {
+      btn.setAttribute("aria-pressed", String(themeMode === "light"));
+      btn.setAttribute("aria-label", themeMode === "dark" ? "Switch to light theme" : "Switch to dark theme");
+    }
+  }
+
+  function setMode(next) {
+    themeMode = next === "light" ? "light" : "dark";
+    applyCurrentTheme();
+  }
+
+  /* ====================================================================
+     9. PRINT DOCUMENT — a real resume built from the same data
+     ==================================================================== */
+  const printRoot = document.getElementById("print-root");
+
+  function prSection(title, children) {
+    const kids = children.filter(Boolean);
+    if (!kids.length) return null;
+    return el("section", { class: "pr-sec" }, el("h2", { text: title }), kids);
+  }
+
+  function buildPrintDoc(template, paper) {
+    const exclude = arr((P.pdf || {}).exclude).map(String);
+    const skip = (id) => exclude.indexOf(id) !== -1;
+
+    clear(printRoot);
+    printRoot.className = "print-root pdf-" + (template || "compact");
+
+    const contact = [
+      has(profile.location) && profile.location,
+      has(profile.email) && profile.email,
+      has(profile.phone) && profile.phone
+    ].filter(Boolean).concat(arr(profile.links).filter((l) => has(l.url)).map((l) => l.label || l.url));
+
+    const head = el("header", { class: "pr-head" },
+      el("h1", { text: profile.name || "" }),
+      has(profile.title) && el("p", { class: "pr-title", text: profile.title }),
+      contact.length > 0 && el("p", { class: "pr-contact" }, contact.map((c) => el("span", { text: c }))),
+      has(profile.tagline) && el("p", { class: "pr-summary", text: plain(profile.tagline) })
+    );
+
+    /* — main column — */
+    const experience = !skip("experience") && EXPERIENCE.length > 0 && prSection("Experience",
+      byStartDesc(EXPERIENCE, "startDate").map(function (job) {
+        const where = [job.company, job.location].filter(has);
+        return el("article", { class: "pr-entry" },
+          el("span", { class: "pr-when", text: fmtRange(job.startDate, job.endDate, true) }),
+          el("div", { class: "pr-entry-top" },
+            el("h3", { text: job.role || job.company || "Role" }),
+            el("span", { class: "pr-when", text: fmtRange(job.startDate, job.endDate, true) })),
+          where.length > 0 && el("p", { class: "pr-where" },
+            has(job.company) && el("span", { text: job.company }),
+            has(job.location) && el("span", { class: "pr-loc", text: (has(job.company) ? " · " : "") + job.location })),
+          has(job.summary) && el("p", { class: "pr-kv" }, rich(job.summary)),
+          has(job.highlights) && el("ul", { class: "pr-bullets" }, arr(job.highlights).map((h) => el("li", null, rich(h)))),
+          has(job.tech) && el("p", { class: "pr-tags", text: arr(job.tech).join(" · ") })
+        );
+      }));
+
+    const projects = !skip("projects") && PROJECTS.length > 0 && prSection("Selected projects",
+      PROJECTS.slice().sort((a, b) => (b.featured === true) - (a.featured === true)).map(function (p) {
+        const line = [p.result, p.approach, p.blurb].filter(has)[0];
+        return el("article", { class: "pr-entry" },
+          el("span", { class: "pr-when", text: "" }),
+          el("div", { class: "pr-entry-top" }, el("h3", { text: p.title || "Project" })),
+          has(line) && el("p", { class: "pr-kv" }, rich(line)),
+          has(p.tech) && el("p", { class: "pr-tags", text: arr(p.tech).join(" · ") }));
+      }));
+
+    const customMain = CUSTOM.filter((s) => has(s.title) && arr(s.items).length && !skip(slug(s.id || s.title)))
+      .map(function (sec) {
+        return prSection(sec.title, arr(sec.items).map(function (it) {
+          return el("article", { class: "pr-entry" },
+            el("span", { class: "pr-when", text: it.meta || "" }),
+            el("div", { class: "pr-entry-top" },
+              el("h3", { text: it.title || "Entry" }),
+              has(it.meta) && el("span", { class: "pr-when", text: it.meta })),
+            has(it.subtitle) && el("p", { class: "pr-where", text: it.subtitle }),
+            has(it.body) && el("p", { class: "pr-kv" }, rich(it.body)),
+            has(it.bullets) && el("ul", { class: "pr-bullets" }, arr(it.bullets).map((b) => el("li", null, rich(b)))),
+            has(it.tags) && el("p", { class: "pr-tags", text: arr(it.tags).join(" · ") }));
+        }));
+      }).filter(Boolean);
+
+    /* — rail column — */
+    const skills = !skip("skills") && SKILLS.length > 0 && prSection("Skills",
+      SKILLS.map((g) => el("p", { class: "pr-kv" },
+        el("strong", { text: (g.category || "Skills") + ": " }), arr(g.items).join(", "))));
+
+    const certs = !skip("certifications") && CERTS.length > 0 && prSection("Certifications",
+      CERTS.map((c) => el("p", { class: "pr-kv" },
+        el("strong", { text: c.name || "" }),
+        [c.issuer, c.year].filter(has).length ? el("span", { text: " — " + [c.issuer, c.year].filter(has).join(", ") }) : null)));
+
+    const education = !skip("education") && EDUCATION.length > 0 && prSection("Education",
+      byStartDesc(EDUCATION, "startYear").map((e) => el("p", { class: "pr-kv" },
+        el("strong", { text: e.degree || e.institution || "" }),
+        has(e.degree) && has(e.institution) ? el("span", { text: " — " + e.institution }) : null,
+        el("span", { text: [fmtRange(e.startYear, e.endYear), e.detail].filter(has).map((x) => " · " + x).join("") }))));
+
+    append(printRoot, [
+      head,
+      el("div", { class: "pr-body" },
+        el("div", { class: "pr-main" }, [experience, projects].concat(customMain).filter(Boolean)),
+        el("aside", { class: "pr-rail" }, [skills, certs, education].filter(Boolean)))
+    ]);
+
+    // @page size can't come from a custom property, so it gets its own tag.
+    let pageStyle = document.getElementById("page-size");
+    if (!pageStyle) {
+      pageStyle = el("style", { id: "page-size" });
+      document.head.appendChild(pageStyle);
+    }
+    pageStyle.textContent = "@page { size: " + (paper === "letter" ? "Letter" : "A4") + "; margin: 14mm; }";
+  }
+
+  /* ── The dialog ── */
+  function openPdfDialog() {
+    const dlg = document.getElementById("pdf-dialog");
+    const templates = (TH && TH.PDF_TEMPLATES) || [{ id: "compact", name: "Compact", blurb: "One column." }];
+    clear(dlg);
+
+    const form = el("form", { method: "dialog" },
+      el("h2", { id: "pdf-dialog-title", text: "Save as PDF" }),
+      el("p", { text: "Your content, re-laid-out as a resume. Pick a layout, then choose “Save as PDF” as the destination in the print dialog." }),
+      el("fieldset", null,
+        el("legend", { text: "Layout" }),
+        templates.map((t) => el("label", { class: "pdf-opt" },
+          el("input", { type: "radio", name: "tpl", value: t.id, checked: t.id === pdfChoice.template }),
+          el("span", null, el("strong", { text: t.name }), el("span", { text: t.blurb }))))),
+      el("fieldset", null,
+        el("legend", { text: "Paper" }),
+        el("div", { class: "pdf-paper" },
+          [["a4", "A4"], ["letter", "US Letter"]].map((p) => el("label", null,
+            el("input", { type: "radio", name: "paper", value: p[0], checked: p[0] === pdfChoice.paper }),
+            p[1])))),
+      el("p", { class: "pdf-note", text: "Tip: turn off “Headers and footers” in the print dialog for a clean page." }),
+      el("div", { class: "pdf-actions" },
+        el("button", { class: "btn btn-ghost", type: "button", value: "cancel",
+          onclick: function () { dlg.close("cancel"); } }, "Cancel"),
+        el("button", { class: "btn btn-primary", type: "submit", value: "print" }, icon("printer"), "Open print dialog"))
+    );
+
+    form.addEventListener("submit", function () {
+      const tpl = form.querySelector('input[name="tpl"]:checked');
+      const paper = form.querySelector('input[name="paper"]:checked');
+      pdfChoice = { template: tpl ? tpl.value : "compact", paper: paper ? paper.value : "a4" };
+      buildPrintDoc(pdfChoice.template, pdfChoice.paper);
+      window.setTimeout(function () { window.print(); }, 60);
+    });
+
+    dlg.appendChild(form);
+    drawIcons();
+    if (typeof dlg.showModal === "function") dlg.showModal();
+    else { buildPrintDoc(pdfChoice.template, pdfChoice.paper); window.print(); }
+  }
+
+  /* ====================================================================
+     10. RENDER — safe to call repeatedly (the Preview tab does exactly that)
      ==================================================================== */
   const main = document.getElementById("main");
   const navList = document.getElementById("nav-links");
@@ -1210,7 +1701,18 @@ section { padding-block: var(--section-y); }
     SKILLS     = arr(P.skills);
     CERTS      = arr(P.certifications);
     EDUCATION  = arr(P.education);
+    CUSTOM     = arr(P.sections);
     computeTotals();
+
+    const cfgMode = (P.theme && P.theme.mode) === "light" ? "light" : "dark";
+    themeMode = cfgMode;
+    applyCurrentTheme();
+
+    const pdfCfg = P.pdf && typeof P.pdf === "object" ? P.pdf : {};
+    pdfChoice = {
+      template: has(pdfCfg.template) ? pdfCfg.template : "compact",
+      paper: pdfCfg.paper === "letter" ? "letter" : "a4"
+    };
 
     if (revealObserver) revealObserver.disconnect();
     if (sectionObserver) sectionObserver.disconnect();
@@ -1218,7 +1720,6 @@ section { padding-block: var(--section-y); }
     clear(main); clear(navList); clear(mobileList); clear(footer);
     footer.hidden = true;
 
-    // Brand
     clear(brand);
     const first = String(profile.shortName || profile.name || "").trim().split(/\s+/)[0] || "portfolio";
     append(brand, [first.toLowerCase(), el("span", { class: "dot", text: "." }), "dev"]);
@@ -1227,10 +1728,7 @@ section { padding-block: var(--section-y); }
     renderHead();
     main.appendChild(renderHero());
 
-    const active = SECTIONS.filter(function (s) {
-      try { return s.when(); } catch (e) { return false; }
-    });
-
+    const active = buildSectionList();
     active.forEach(function (s) {
       if (s.footer) renderContact(footer);
       else main.appendChild(s.render());
@@ -1241,6 +1739,11 @@ section { padding-block: var(--section-y); }
         list.appendChild(el("li", null, el("a", { href: "#" + s.id, text: s.label })));
       });
     });
+
+    // The print document is built on demand, not now: keeping a second
+    // copy of the content (with its own <h1>) in the DOM at all times
+    // would give the page two h1s and duplicate text for crawlers.
+    clear(printRoot);
 
     main.setAttribute("aria-busy", "false");
     loadStatus.textContent = "Portfolio loaded.";
@@ -1265,15 +1768,14 @@ section { padding-block: var(--section-y); }
           el("p", { class: "error-detail", text: String((err && err.message) || err) }),
           isFile
             ? el("p", null, "You opened this file directly from disk, and browsers block ",
-                el("code", { text: "fetch()" }),
-                " on ", el("code", { text: "file://" }), " URLs. Serve the folder over HTTP instead — for example ",
+                el("code", { text: "fetch()" }), " on ", el("code", { text: "file://" }),
+                " URLs. Serve the folder over HTTP instead — for example ",
                 el("code", { text: "python3 -m http.server" }), " — or view it on GitHub Pages.")
             : el("p", null, "Check that ", el("code", { text: "data.json" }),
                 " sits next to this page and contains valid JSON."),
           el("div", { class: "hero-cta", style: "margin-top:1.5rem" },
             el("button", { class: "btn btn-primary", type: "button", onclick: load }, icon("refresh-cw"), "Try again"),
-            el("a", { class: "btn btn-ghost", href: "mailto:lakshmichaitanyareddyi@gmail.com" }, icon("mail"), "Email instead")
-          )
+            el("a", { class: "btn btn-ghost", href: "mailto:lakshmichaitanyareddyi@gmail.com" }, icon("mail"), "Email instead"))
         )
       )
     ));
@@ -1281,7 +1783,7 @@ section { padding-block: var(--section-y); }
   }
 
   /* ====================================================================
-     9. LOAD
+     11. LOAD + PREVIEW BRIDGE
      ==================================================================== */
   function load() {
     loadStatus.textContent = "Loading portfolio…";
@@ -1300,15 +1802,25 @@ section { padding-block: var(--section-y); }
       .catch(showError);
   }
 
+  function setPrintPreview(on, template, paper) {
+    document.body.classList.toggle("print-preview", !!on);
+    document.body.classList.toggle("paper-letter", !!on && paper === "letter");
+    if (on) buildPrintDoc(template || pdfChoice.template, paper || pdfChoice.paper);
+  }
+
   function onPreviewMessage(event) {
     if (event.source !== window.parent) return;
     const msg = event.data;
     if (!msg || msg.type !== "portfolio:data") return;
-    try { render(msg.data); } catch (e) { showError(e); }
+    try {
+      render(msg.data);
+      if (msg.mode === "light" || msg.mode === "dark") setMode(msg.mode);
+      setPrintPreview(msg.view === "print", msg.pdfTemplate, msg.paper);
+    } catch (e) { showError(e); }
   }
 
   /* ====================================================================
-     10. CHROME — wired once, independent of the data
+     12. CHROME
      ==================================================================== */
   function drawIcons() { if (window.lucide && window.lucide.createIcons) window.lucide.createIcons(); }
   document.addEventListener("DOMContentLoaded", drawIcons);
@@ -1346,15 +1858,8 @@ section { padding-block: var(--section-y); }
   }
 
   // Theme toggle: in-memory only, nothing persisted
-  const root = document.documentElement;
-  const themeBtn = document.getElementById("theme-toggle");
-  const themeMeta = document.head.querySelector('meta[name="theme-color"]');
-  themeBtn.addEventListener("click", function () {
-    const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
-    root.setAttribute("data-theme", next);
-    themeBtn.setAttribute("aria-pressed", String(next === "light"));
-    themeBtn.setAttribute("aria-label", next === "dark" ? "Switch to light theme" : "Switch to dark theme");
-    if (themeMeta) themeMeta.setAttribute("content", next === "dark" ? "#0d1117" : "#fbfbf9");
+  document.getElementById("theme-toggle").addEventListener("click", function () {
+    setMode(themeMode === "dark" ? "light" : "dark");
   });
 
   // Mobile menu
@@ -1381,9 +1886,16 @@ section { padding-block: var(--section-y); }
   window.addEventListener("scroll", onScroll, { passive: true });
   onScroll();
 
+  // Ctrl+P / ⌘P bypasses the dialog, so make sure there's something to print.
+  window.addEventListener("beforeprint", function () {
+    if (!printRoot.firstChild) buildPrintDoc(pdfChoice.template, pdfChoice.paper);
+  });
+
   /* ====================================================================
-     11. GO
+     13. GO
      ==================================================================== */
+  applyCurrentTheme();          // default theme paints the skeleton correctly
+
   if (PREVIEW) {
     window.addEventListener("message", onPreviewMessage);
     window.parent.postMessage({ type: "portfolio:preview-ready" }, "*");

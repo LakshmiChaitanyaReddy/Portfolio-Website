@@ -1,33 +1,29 @@
 # Setup
 
-Three files do the whole job:
-
 | File | What it is |
 |---|---|
 | `index.html` | The public site. Fetches `data.json` and renders everything from it. |
-| `data.json` | All the content. The only file that changes when you update the site. |
-| `admin.html` | Private editing UI. Reads and commits `data.json` through the GitHub API. |
+| `data.json` | All content, plus the chosen theme and PDF settings. The only file that changes when you update the site. |
+| `themes.js` | The 10 theme presets, the font catalogue, the PDF layouts and the custom-section layouts. Shared by the site and the admin. |
+| `admin.html` | Private editing UI. Reads and commits `data.json` (and uploaded images) through the GitHub API. |
 
-Put `resume.pdf` (and optionally `og-image.png`) beside them.
+Put `resume.pdf` beside them if you want a hosted PDF download. Uploaded images land in `assets/`.
 
 ---
 
 ## 1. Deploy to GitHub Pages
 
-1. Push the three files to the root of a repository — `your-username.github.io` for a
+1. Push the four files to the root of a repository — `your-username.github.io` for a
    user site, or any repo for a project site.
 2. **Settings → Pages → Build and deployment → Source: Deploy from a branch**, branch
    `main`, folder `/ (root)`.
-3. Wait for the first deploy. The site is at `https://your-username.github.io/`
-   (or `https://your-username.github.io/repo-name/`).
-4. Open `data.json` and replace the four placeholders: `SITE_URL`, `LINKEDIN_URL`,
-   `GITHUB_URL`, `SERVICENOW_COMMUNITY_URL`. Everything else is already filled in.
+3. Open `data.json` and replace the four placeholders: `SITE_URL`, `LINKEDIN_URL`,
+   `GITHUB_URL`, `SERVICENOW_COMMUNITY_URL`.
 
 ### Running it locally
 
 Double-clicking `index.html` **will not work** — browsers block `fetch()` on `file://`
-URLs, and the page will show its error state saying exactly that. Serve the folder over
-HTTP instead:
+URLs, and the page says so in its error state. Serve the folder over HTTP:
 
 ```bash
 cd "path/to/this/folder"
@@ -35,11 +31,13 @@ python3 -m http.server 8000
 # then open http://localhost:8000
 ```
 
+The admin page works from `localhost` too, and talks to the GitHub API directly.
+
 ---
 
 ## 2. Create the fine-grained token
 
-The admin page needs a token with **one permission on one repository**. Nothing more.
+The admin needs a token with **one permission on one repository**.
 
 1. GitHub → your avatar → **Settings**
 2. **Developer settings** → **Personal access tokens** → **Fine-grained tokens**
@@ -47,72 +45,152 @@ The admin page needs a token with **one permission on one repository**. Nothing 
 4. Fill it in:
    - **Token name** — something like `portfolio-admin`
    - **Expiration** — 90 days is a good default. Short-lived is the point of these.
-   - **Resource owner** — your own account
-     *(If the repo belongs to an organisation, the org has to allow fine-grained tokens.
-     Personal repos have no such step.)*
+   - **Resource owner** — your own account.
+     *(If the repo belongs to an organisation, the org has to allow fine-grained tokens.)*
    - **Repository access** → **Only select repositories** → pick the one repo that holds
-     your site. Do not choose "All repositories".
-   - **Permissions** → **Repository permissions** → find **Contents** → set to
-     **Read and write**.
-     Leave everything else as "No access". GitHub adds **Metadata: Read-only**
-     automatically — that's required and can't be removed.
+     your site. Not "All repositories".
+   - **Permissions** → **Repository permissions** → **Contents** → **Read and write**.
+     Leave everything else at "No access". GitHub adds **Metadata: Read-only**
+     automatically; that's required and can't be removed.
 5. **Generate token** and copy it. GitHub shows it exactly once.
 
-That's the entire scope: read and write files in one repository. The token cannot touch
-your other repos, your account settings, your gists, or anything else.
+That's the entire scope: read and write files in one repository. Contents write is what
+covers both `data.json` and image uploads — there is no narrower permission that allows
+committing a file.
 
-When it expires, generate a new one the same way. There is nothing to update in the code
-— you paste the new token the next time you open the admin page.
+When it expires, generate a new one. Nothing in the code changes; you just paste the new
+token next time.
 
 ---
 
-## 3. Using the admin page
+## 3. Using the admin
 
-Open `https://your-username.github.io/admin.html`.
+Open `https://your-username.github.io/admin.html`, fill in the repo details, paste the
+token, hit **Connect**. The token input is cleared immediately; the value lives in a
+JavaScript variable for the life of the tab.
 
-1. Enter username, repo, branch (`main`), path (`data.json`) and paste the token.
-   The owner and repo are pre-filled if you're on a `*.github.io` hostname.
-2. **Connect** — the page fetches `data.json`, decodes it, and fills the forms. The
-   token input is cleared immediately; the value lives only in a JavaScript variable
-   for the life of the tab.
-3. Edit across the tabs. Arrays support **add**, **delete**, **drag-to-reorder** by the
-   `⠿` handle, and **↑ / ↓** buttons for keyboard use. Tech and skill lists are tag
-   inputs: type, press <kbd>Enter</kbd>, click the `×` to remove.
-4. **Preview** tab renders the real site in an iframe against your unsaved edits.
-5. **Save to GitHub** validates first, then commits. Edit the commit message beside the
-   button. Pages usually redeploys within a minute.
-6. **Download data.json** is the escape hatch — grab the file and commit it by hand.
+**Tabs:** Profile · Experience · Projects · Skills · Certifications · Education ·
+Sections · Theme · PDF · Preview.
 
-### What gets checked before a commit
+Every list supports **add**, **delete**, **drag-to-reorder** by the `⠿` handle, and
+**↑ / ↓** buttons for keyboard use. Tech and skill lists are tag inputs — type, press
+<kbd>Enter</kbd>, click `×` to remove.
 
-The save is blocked, with a list of what's wrong and a link to the offending tab, if:
+**Save to GitHub** validates, then commits. **Download data.json** is the escape hatch.
+If you close the tab with unsaved changes, the browser asks first.
 
-- `profile.name` is missing, or `profile.email` isn't a plausible address
-- any experience entry is missing `id`, `company`, `role` or `startDate`
-- any project is missing `id` or `title`; any skill group is missing `category`;
-  any certification is missing `name`; any qualification is missing `degree` or
-  `institution`
-- a date isn't `YYYY-MM` (or `YYYY` for years)
-- a role ends before it starts
-- two entries in the same list share an `id`
+### Images
+
+Any image field (profile photo, project cover, custom-section item) has an **Upload…**
+button.
+
+- The file is **downscaled in the browser first** — max 1600px on the long edge,
+  re-encoded to WebP at 85%. An 8 MB phone photo becomes ~200 KB. SVGs and GIFs pass
+  through untouched.
+- It's committed to `assets/` as **its own commit**, immediately — separately from
+  `data.json`. The filename is lower-cased and hyphenated.
+- **Remove** clears the reference; it doesn't delete the file from the repo (git history
+  keeps it anyway).
+- Fill in **Alt text**. Leaving it blank isn't blocked, but you'll get a warning on save
+  — an image with no alt is invisible to a screen reader.
+
+### Custom sections
+
+The **Sections** tab does two things:
+
+1. **Order and visibility** — drag any section (built-in or custom) to reorder it on the
+   site, or hide one without deleting its content. Contact is always the footer.
+2. **Custom sections** — anything the built-ins don't cover: talks, publications, awards,
+   volunteering, a screenshot gallery.
+
+Each custom section picks a **layout**:
+
+| Layout | Good for |
+|---|---|
+| **Cards** | Talks, awards, side projects, open-source work |
+| **Timeline** | Milestones, volunteering, a second career track |
+| **List** | Publications, mentions, courses — compact rows with a date on the right |
+| **Prose** | A longer narrative or statement |
+| **Gallery** | Screenshots, diagrams, certificates — image grid with captions |
+
+Every item has the same optional fields — title, subtitle, meta, body, bullets, tags,
+image, links — and each layout uses whichever of them you fill in. A section with no
+items never renders, and never appears in the nav.
+
+### Themes
+
+The **Theme** tab starts with 10 presets: Graphite, Ink, Terminal, Sapphire, Crimson,
+Sage, Slate Mono, Violet, Frost and Press. They differ in palette, font pairing, corner
+radius, type scale and density — not just colour.
+
+From there you can change anything:
+
+- **Fonts** — three pickers (headings / body / mono) over a curated Google Fonts
+  catalogue. Only the families you actually choose get requested at runtime.
+- **Colours** — ten per mode, edited separately for dark and light. Hover, tint, and
+  on-accent text colours are *derived*, so changing one accent updates everything
+  consistently. The on-accent text colour is picked by luminance so it always lands on
+  the higher-contrast side of black/white.
+- **Shape** — card radius, button radius, chip radius, content width.
+- **Type** — overall size, heading size, line height, heading weight, letter-spacing.
+- **Density** — section padding and grid gap.
+
+Tweaks are stored as a handful of CSS custom properties in `data.json` under
+`theme.vars`. **Save as a template** freezes the current look as a named, reusable
+template stored alongside them — it then appears in the gallery like a built-in.
+
+Tick **Preview theme in this editor** to apply the theme you're building to the admin
+chrome too. It's off by default so a half-finished palette can't make the editor
+unreadable.
+
+### PDF
+
+The site can re-lay-out your content as a resume and hand it to the browser's print
+dialog, where you choose **Save as PDF**. Real selectable text, working hyperlinks,
+proper page breaks — nothing is screenshotted, and there's no PDF library to load.
+
+Five layouts:
+
+| Layout | Shape |
+|---|---|
+| **Compact** | One column, dense — the most content per page |
+| **Sidebar** | Two columns; contact, skills, certs and education in a left rail |
+| **Classic** | Centred header, serif headings, roomy leading |
+| **Timeline** | Dates in a left gutter with a rule down the page |
+| **Minimal** | No rules, no colour, no chips — the ATS-safest option |
+
+The **PDF** tab sets the default layout, paper size (A4 / US Letter), and which sections
+to leave out. Visitors can still pick a different layout from the **Save as PDF** button
+in the hero. Turn off "Headers and footers" in the print dialog for a clean page.
+
+### What's checked before a commit
+
+Errors **block** the save; warnings don't.
+
+*Errors:* `profile.name` missing; `profile.email` not a plausible address; an experience
+entry missing `id`, `company`, `role` or `startDate`; a project missing `id` or `title`;
+a skill group missing `category`; a certification missing `name`; a qualification missing
+`degree` or `institution`; a custom section missing a title or with a clashing anchor id;
+a date that isn't `YYYY-MM` (or `YYYY`); a role that ends before it starts; two entries in
+one list sharing an `id`.
+
+*Warnings:* an image with no alt text; a custom section with no items; an empty item; a
+theme or PDF layout id that no longer exists.
+
+Each problem links straight to the tab it's on.
 
 ### If someone else changed the file
 
-GitHub rejects a write against a stale `sha`. The admin page catches that, re-fetches
-the current `sha`, tells you what happened, and keeps your edits in the form. Press
-**Save** again to overwrite the remote version, or **Reload from GitHub** to throw yours
-away.
-
-### Closing the tab
-
-If you have unsaved changes, the browser asks you to confirm before leaving.
+GitHub rejects a write against a stale `sha`. The admin catches that, re-fetches the
+current `sha`, says what happened, and **keeps your edits in the form**. Press **Save**
+again to overwrite the remote version, or **Reload from GitHub** to discard yours.
 
 ---
 
 ## 4. About `admin.html` being public
 
 `admin.html` is served by GitHub Pages, so anyone who guesses the URL can load it. That's
-fine, and it's worth understanding why:
+fine:
 
 - The page ships with **no credentials in it**. It's an empty form.
 - Without a valid token it can't read a private repo or write to any repo. GitHub does
@@ -120,17 +198,16 @@ fine, and it's worth understanding why:
 - The token is never written to `localStorage`, `sessionStorage`, a cookie, the URL, or
   the committed file. It exists in one JavaScript variable and disappears when the tab
   closes or you press **Disconnect**.
-- The page refuses to look reassuring over plain HTTP: if it's not HTTPS or localhost it
-  shows a warning telling you not to paste a token.
+- Over plain HTTP the page shows a warning telling you not to paste a token.
 - `<meta name="robots" content="noindex, nofollow">` keeps it out of search results.
 
-So the real security boundary is the token itself. Keep it out of screenshots and
-screen shares, give it the minimum scope above, set an expiry, and
-[revoke it](https://github.com/settings/tokens?type=beta) if it ever leaks.
+The real security boundary is the token. Keep it out of screenshots and screen shares,
+give it the minimum scope above, set an expiry, and
+[revoke it](https://github.com/settings/tokens?type=beta) if it leaks.
 
-If you'd still rather it not be public, delete `admin.html` from the deployed branch and
-run it locally instead (`python3 -m http.server` in the project folder) — it talks to the
-GitHub API directly and works fine from `localhost`.
+Prefer it not public? Delete `admin.html` from the deployed branch and run it locally
+(`python3 -m http.server`) — it talks to the GitHub API directly and works fine from
+`localhost`.
 
 ---
 
@@ -138,58 +215,61 @@ GitHub API directly and works fine from `localhost`.
 
 ```jsonc
 {
-  "profile": {
-    "name", "title", "tagline", "location", "email", "phone", "resumeUrl",
-    "links": [{ "label", "url", "icon" }]
-  },
+  "theme":  { "preset", "mode", "fonts", "vars": { "common", "dark", "light" }, "templates": [] },
+  "pdf":    { "template", "paper", "exclude": [] },
+  "sectionOrder":   [ "about", "skills", … ],   // display order, any section id
+  "hiddenSections": [ ],                        // rendered nowhere, content kept
+  "sections": [{ "id", "title", "eyebrow", "blurb", "layout", "altBackground",
+                 "items": [{ "title", "subtitle", "meta", "body",
+                             "bullets": [], "tags": [], "image": { "src", "alt" },
+                             "links": [] }] }],
+  "profile": { "name", "title", "tagline", "location", "email", "phone", "resumeUrl",
+               "photo": { "src", "alt" }, "links": [{ "label", "url", "icon" }] },
   "experience":     [{ "id", "company", "role", "startDate", "endDate", "location",
                        "summary", "highlights": [], "tech": [] }],
   "projects":       [{ "id", "title", "blurb", "problem", "approach", "result",
-                       "tech": [], "featured": bool, "links": [] }],
-  "skills":         [{ "category", "items": [] }],
-  "certifications": [{ "name", "issuer", "year", "credentialUrl" }],
+                       "tech": [], "featured": bool, "image": { "src", "alt" },
+                       "links": [] }],
+  "skills":         [{ "category", "icon", "items": [] }],
+  "certifications": [{ "name", "abbr", "issuer", "year", "credentialUrl" }],
   "education":      [{ "degree", "institution", "startYear", "endYear", "detail" }]
 }
 ```
 
 **Every field is optional.** Delete one and the renderer skips it — it never prints
 `undefined` or an empty label. Empty a whole array and its section *and* its nav link
-vanish from the site.
+vanish.
 
-A few conventions the renderer relies on:
+Conventions the renderer relies on:
 
 - **Dates** are `"YYYY-MM"` for jobs, `"YYYY"` for education. `endDate: null` means
   *Present*.
 - **Sorting** is automatic — experience and education sort by start date, newest first.
-  The order in the file only breaks ties.
-- **`{{years}}`** inside `tagline` or `about` is replaced with total years of experience,
-  computed from the earliest `startDate`. `{{months}}` works too. This is why the number
-  never goes stale.
-- **`**bold**`** inside highlights, summaries and blurbs renders as `<strong>`.
+  `sectionOrder` only controls which *section* goes where, not what's inside it.
+- **`{{years}}`** inside `tagline` or `about` becomes total years of experience, computed
+  from the earliest `startDate`. `{{months}}` works too. This is why the number never
+  goes stale.
+- **`**bold**`** inside highlights, summaries, blurbs and custom bodies renders as
+  `<strong>`.
 - **`icon`** is a [Lucide](https://lucide.dev/icons) icon name. An unknown name renders
   nothing and breaks nothing.
 
-### Optional fields beyond the schema above
-
-These aren't in the core schema but the renderer and the admin both support them, and the
-seed data uses them:
-
-| Field | Effect |
-|---|---|
-| `profile.shortName` | Used in the nav brand and `<title>` instead of the full name |
-| `profile.status` | Text for the pill at the top of the hero; blank hides it |
-| `profile.about[]` | Paragraphs for the About section; empty removes the section |
-| `profile.siteUrl`, `profile.ogImage` | Canonical URL and Open Graph image |
-| `certifications[].abbr` | Short code shown on the card and in the hero line |
-| `skills[].icon` | Icon on the category card |
+Fields beyond the core schema, all optional: `profile.shortName` (nav brand and
+`<title>`), `profile.status` (hero pill), `profile.about[]` (About section),
+`profile.siteUrl` / `profile.ogImage` (canonical + Open Graph),
+`certifications[].abbr`, `skills[].icon`.
 
 ---
 
-## 6. Re-theming
+## 6. Re-theming in code
 
-Every colour and spacing value is a CSS custom property at the top of the `<style>` block
-in `index.html`, grouped and commented. `admin.html` carries an identical copy of the same
-two blocks (`:root` and `[data-theme="light"]`) — paste your edited version into both and
-the whole thing re-themes, including the admin UI.
+Everything visual is a CSS custom property. Three places, in order of how often you'd
+touch them:
+
+1. **The Theme tab** — for anything you'd normally want to change.
+2. **`themes.js`** — to add a preset for good, or extend the font catalogue. A preset is
+   ten colours per mode plus a shape/type block; the rest is derived.
+3. **The `:root` block in `index.html`** — the fallback used if `themes.js` or
+   `data.json` fails to load. `admin.html` carries an identical copy.
 
 The light theme overrides **colours only**, so layout lives in exactly one place.
