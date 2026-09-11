@@ -30,6 +30,8 @@
     "name": "Lakshmi Chaitanya Reddy Idamakanti",
     "shortName": "Chaitanya Reddy",
     "title": "Senior ServiceNow Developer",
+    "yearsRounding": "half",
+    "experienceYears": "",
     "tagline": "I build the workflows, integrations and custom applications that make ServiceNow actually work for the people using it — across CSM, HRSD and ITSM, with {{years}}+ years of production delivery behind me.",
     "status": "Open to ServiceNow platform roles",
     "location": "Hyderabad, India",

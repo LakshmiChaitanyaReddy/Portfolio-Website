@@ -221,7 +221,7 @@
     const exclude = arr(d.pdf && d.pdf.exclude).map(String);
     const skip = function (id) { return exclude.indexOf(id) !== -1; };
 
-    F.useTotals(d.experience);
+    F.useTotals(d.experience, d.profile);
 
     const root = el("div", { class: "resume r-" + tpl.id });
 
@@ -315,7 +315,7 @@
      ==================================================================== */
   function toText(data) {
     const d = data || {}, p = d.profile || {}, out = [];
-    F.useTotals(d.experience);
+    F.useTotals(d.experience, d.profile);
     const rule = function (t) { out.push("", t.toUpperCase(), "".padEnd(Math.max(t.length, 8), "=")); };
     const strip = function (s) { return F.plain(s).replace(/\s+/g, " ").trim(); };
 
@@ -374,7 +374,7 @@
 
   function toMarkdown(data) {
     const d = data || {}, p = d.profile || {}, out = [];
-    F.useTotals(d.experience);
+    F.useTotals(d.experience, d.profile);
     const strip = function (s) { return F.tokens(s).replace(/\s+/g, " ").trim(); };
 
     if (has(p.name)) out.push("# " + p.name);
@@ -437,7 +437,7 @@
   /* jsonresume.org schema */
   function toJsonResume(data) {
     const d = data || {}, p = d.profile || {};
-    F.useTotals(d.experience);
+    F.useTotals(d.experience, d.profile);
     const iso = function (v) {
       const x = F.parseYM(v);
       if (!x) return undefined;

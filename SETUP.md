@@ -85,6 +85,46 @@ Every list has add, delete, drag-to-reorder by the `⠿` handle, and ↑/↓ but
 for keyboard use. Tech and skill lists are tag inputs — type, <kbd>Enter</kbd>,
 `×` to remove.
 
+### The "4.5+ years" figure
+
+Nothing types that number in. It's counted from the **earliest `startDate` in
+Experience** to today, every time the page loads, so it can't go stale. Months
+are counted inclusively, the way LinkedIn counts them — June 2022 to September
+2026 is 52 months, not 51.
+
+52 ÷ 12 = 4.333…, and how that gets written is a choice, not arithmetic.
+**Profile → Experience — how to round it**:
+
+| Option | 52 months reads as | |
+|---|---|---|
+| **Nearest half year** | `4.5` | How people say it out loud. Can round up a month or two. **← currently set** |
+| One decimal, rounded down | `4.3` | Never claims a month you haven't worked. |
+| Whole years, rounded down | `4` | The conservative read. |
+| Nearest whole year | `4` | No decimal point anywhere. |
+
+The hint under that control spells out the whole chain — *"4 yr 4 mo since June
+2022 → nearest half year → renders as 4.5"* — and updates as you change it.
+
+**Profile → Experience — type it in yourself** overrides all of the above with
+whatever you type: `4.5`, `~4.5`, `5`. Two things to know:
+
+- Type **just the number**. The copy writes the `+` itself, so `4.5` renders as
+  "4.5+ years" and `~4.5` renders as "~4.5+ years".
+- An override **stops updating**. Leave the box empty unless the figure has to
+  match a printed CV exactly — that's the entire reason it's computed.
+
+`{{years}}` in the tagline or an About paragraph becomes that number;
+`{{months}}` becomes the raw month count (`52`). The About panel's "Experience"
+fact always shows the exact `4 yr 4 mo`, whatever rounding you pick.
+
+### The footer year
+
+`© 2026 Your Name` is **dynamic** — `new Date().getFullYear()` at page load, in
+[js/render.js](js/render.js). It rolls over on its own; there's no year literal
+anywhere in the HTML or JS to forget about. It reads the *visitor's* clock, so
+someone with a badly-set system date sees their own year. That's the usual
+trade-off for not needing a build step, and it's what every static site does.
+
 ### Logos and icons
 
 Lucide, the icon CDN, **deleted all its brand icons** in version 1.x — that's why
@@ -268,7 +308,10 @@ not public? Delete `admin.html` from the deployed branch and run it from
                  "items": [{ "title", "value", "subtitle", "meta", "body",
                              "bullets": [], "tags": [],
                              "image": { "src", "alt" }, "links": [] }] }],
-  "profile": { "name", "shortName", "title", "tagline", "status", "location",
+  "profile": { "name", "shortName", "title",
+               "yearsRounding",      // half | exact | down | near
+               "experienceYears",    // "" = compute it; "4.5" or "~4.5" = override
+               "tagline", "status", "location",
                "email", "phone", "resumeUrl", "siteUrl",
                "ogImage": { "src", "alt" },   // a bare "og.png" string also works
                "photo": { "src", "alt" },
@@ -313,6 +356,7 @@ and the renderer all pick it up with no other changes:
 | section layout | `LAYOUTS` in `js/layouts.js` + its CSS |
 | resume layout | `TEMPLATES` in `js/resume.js` + a `.r-yourid` CSS block |
 | export format | `EXPORTS` in `js/resume.js` |
+| way of rounding the years figure | `ROUNDINGS` in `js/core.js` |
 
 A whole new *built-in* section (not a custom one) is the only change that still
 touches two places: a renderer function and one line of `sectionList()` in

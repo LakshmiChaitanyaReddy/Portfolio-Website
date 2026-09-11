@@ -500,7 +500,7 @@
   function paint(data, refs) {
     const d = normalise(data);
     const doc = refs.doc || document;
-    F.useTotals(d.experience);
+    F.useTotals(d.experience, d.profile);
     ANIM = (d.theme && typeof d.theme.iconAnimation === "string") ? d.theme.iconAnimation : "lift";
 
     clear(refs.main); clear(refs.navList); clear(refs.mobileList); clear(refs.footer);

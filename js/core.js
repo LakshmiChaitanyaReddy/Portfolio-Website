@@ -117,18 +117,78 @@
     return out.join(" ");
   }
 
+  /* ── THE HEADLINE NUMBER ────────────────────────────────────────────────
+     Months are counted inclusively, the way LinkedIn counts them: Jun 2022
+     → Sep 2026 reads as 52 months, not 51. Divide that by 12 and you get
+     4.333…, and how you'd like that written is taste rather than arithmetic
+     — so it's a choice here instead of a hardcoded Math call.
+
+     Worked example at 52 months:
+       half   4.5   nearest half — how people actually say it, can round up
+       exact  4.3   one decimal, always rounded down — never overstates
+       down   4     whole years, rounded down
+       near   4     nearest whole year
+     ───────────────────────────────────────────────────────────────────── */
+  const ROUNDINGS = [
+    { id: "half",  name: "Nearest half year", example: "4.5",
+      blurb: "How people say it out loud. Can round up by a month or two.",
+      fn: function (m) { return Math.round(m / 6) / 2; } },
+    { id: "exact", name: "One decimal, rounded down", example: "4.3",
+      blurb: "Never claims a month you haven't worked.",
+      fn: function (m) { return Math.floor((m / 12) * 10) / 10; } },
+    { id: "down",  name: "Whole years, rounded down", example: "4",
+      blurb: "The conservative read — pairs well with a “+” after it.",
+      fn: function (m) { return Math.floor(m / 12); } },
+    { id: "near",  name: "Nearest whole year", example: "4",
+      blurb: "No decimal point anywhere.",
+      fn: function (m) { return Math.round(m / 12); } }
+  ];
+
+  const R_INDEX = {};
+  ROUNDINGS.forEach(function (r) { R_INDEX[r.id] = r; });
+
+  /* String, not a number: it goes straight into copy. 4.0 prints as "4". */
+  function roundYears(months, id) {
+    if (!months || months < 0) return "";
+    const v = (R_INDEX[id] || ROUNDINGS[0]).fn(months);
+    return v > 0 ? String(v) : "";
+  }
+
   /* Total experience from the earliest start date, so it never goes stale.
-     One decimal, floored (52 mo → "4.3"). For a whole number, swap the
-     marked line for Math.floor(TOTAL_MONTHS / 12). */
-  function useTotals(experience) {
+     profile.experienceYears overrides the computed figure verbatim — set it
+     when the number has to match a CV exactly ("4.5", "~4.5"), and accept
+     that it then stops updating itself. Blank means "keep computing it".
+     profile.yearsRounding picks a ROUNDINGS entry; default nearest-half. */
+  function useTotals(experience, profile) {
+    const p = profile || {};
     const starts = arr(experience).map(function (j) { return parseYM(j.startDate); }).filter(Boolean);
-    if (!starts.length) { TOTAL_MONTHS = 0; TOTAL_YEARS = ""; return { months: 0, years: "" }; }
-    const earliest = starts.reduce(function (a, b) { return ymIndex(a) <= ymIndex(b) ? a : b; });
-    TOTAL_MONTHS = monthsBetween(earliest.m ? earliest.y + "-" + earliest.m : String(earliest.y), null);
-    TOTAL_YEARS = TOTAL_MONTHS
-      ? (Math.floor((TOTAL_MONTHS / 12) * 10) / 10).toFixed(1).replace(/\.0$/, "")   // ← rounding
-      : "";
-    return { months: TOTAL_MONTHS, years: TOTAL_YEARS };
+    const earliest = starts.length
+      ? starts.reduce(function (a, b) { return ymIndex(a) <= ymIndex(b) ? a : b; })
+      : null;
+
+    TOTAL_MONTHS = earliest
+      ? monthsBetween(earliest.m ? earliest.y + "-" + earliest.m : String(earliest.y), null)
+      : 0;
+    TOTAL_YEARS = has(p.experienceYears)
+      ? String(p.experienceYears).trim()
+      : roundYears(TOTAL_MONTHS, p.yearsRounding);
+
+    return { months: TOTAL_MONTHS, years: TOTAL_YEARS, since: earliest };
+  }
+
+  /* Plain-English account of where the number came from — the admin shows
+     this under the field so it's never a mystery. */
+  function explainTotals(experience, profile) {
+    const p = profile || {};
+    const t = useTotals(experience, p);
+    if (!t.months && !has(p.experienceYears)) return "No start dates yet, so there's nothing to count.";
+    const from = t.since ? fmtYM(t.since.m ? t.since.y + "-" + t.since.m : String(t.since.y)) : "";
+    const counted = t.months ? fmtDuration(t.months) + (from ? " since " + from : "") : "";
+    if (has(p.experienceYears)) {
+      return "Overridden: renders as “" + t.years + "”" + (counted ? " · computed would be " + counted : "") + ".";
+    }
+    const r = R_INDEX[p.yearsRounding] || ROUNDINGS[0];
+    return counted + " → " + r.name.toLowerCase() + " → renders as “" + t.years + "”.";
   }
 
   const totals = function () { return { months: TOTAL_MONTHS, years: TOTAL_YEARS }; };
@@ -174,7 +234,8 @@
     MONTHS: MONTHS, SHORT: SHORT,
     parseYM: parseYM, ymIndex: ymIndex, fmtYM: fmtYM, fmtRange: fmtRange,
     monthsBetween: monthsBetween, fmtDuration: fmtDuration,
-    useTotals: useTotals, totals: totals,
+    ROUNDINGS: ROUNDINGS, roundYears: roundYears,
+    useTotals: useTotals, totals: totals, explainTotals: explainTotals,
     tokens: tokens, rich: rich, plain: plain, slug: slug, byStartDesc: byStartDesc
   });
 

@@ -123,7 +123,15 @@
         { key: "name", label: "Full name", required: true },
         { key: "shortName", label: "Short name", hint: "Nav brand and page title" },
         { key: "title", label: "Job title" },
-        { key: "tagline", label: "Tagline", type: "textarea", hint: "{{years}} is replaced with computed experience" },
+        { key: "yearsRounding", label: "Experience — how to round it", type: "select",
+          optionsFrom: "roundings",
+          hint: function () { return PF.fmt.explainTotals(data.experience, data.profile); } },
+        { key: "experienceYears", label: "Experience — type it in yourself", placeholder: "auto",
+          hint: "Leave empty and it's counted from your earliest start date, so it never goes stale. "
+              + "Fill it in to override that: just the number — 4.5, ~4.5, 5 — since the copy writes the “+” itself. "
+              + "Once set, it stays at whatever you typed." },
+        { key: "tagline", label: "Tagline", type: "textarea",
+          hint: "{{years}} becomes the number above · {{months}} becomes the month count" },
         { key: "status", label: "Hero pill", hint: "Blank hides the pill" },
         { key: "location", label: "Location", hint: "City, Country" },
         { key: "email", label: "Email", check: "email" },
@@ -643,18 +651,44 @@
     return wrap;
   }
 
+  /* A hint can be a string or a function of the data. Function hints are
+     repainted on every edit (see touched()), so "renders as 4.5" stays true
+     while you're typing in the field above it. Cleared by buildTabs(). */
+  let LIVE_HINTS = [];
+
+  function hintNode(f, obj) {
+    if (!has(f.hint) && typeof f.hint !== "function") return null;
+    const node = el("span", { class: "hint" });
+    const paint = function () {
+      node.textContent = typeof f.hint === "function" ? String(f.hint(obj) || "") : f.hint;
+    };
+    paint();
+    if (typeof f.hint === "function") LIVE_HINTS.push({ node: node, paint: paint });
+    return node;
+  }
+
+  /* Rows get torn down and rebuilt constantly — drop the closures whose node
+     has left the document rather than letting them pile up for the session. */
+  function repaintHints() {
+    LIVE_HINTS = LIVE_HINTS.filter(function (h) { return h.node.isConnected !== false; });
+    LIVE_HINTS.forEach(function (h) {
+      try { h.paint(); } catch (e) { /* a hint must never break an edit */ }
+    });
+  }
+
   function selectField(obj, f) {
     const id = uid();
     const opts = f.optionsFrom === "layouts"
       ? PF.layouts.LIST.map(function (l) { return { value: l.id, label: l.name + " — " + l.blurb }; })
+      : f.optionsFrom === "roundings"
+      ? PF.fmt.ROUNDINGS.map(function (r) { return { value: r.id, label: r.name + " (e.g. " + r.example + ") — " + r.blurb }; })
       : (f.options || []).map(function (o) { return typeof o === "string" ? { value: o, label: o } : o; });
     const sel = el("select", { id: id });
     opts.forEach(function (o) { sel.appendChild(el("option", { value: o.value, text: o.label })); });
     sel.value = readValue(obj, f) || (opts[0] && opts[0].value) || "";
     sel.addEventListener("change", function () { obj[f.key] = sel.value; touched(); });
     return el("div", { class: "field" },
-      el("label", { for: id, text: f.label || f.key }), sel,
-      f.hint && el("span", { class: "hint", text: f.hint }));
+      el("label", { for: id, text: f.label || f.key }), sel, hintNode(f, obj));
   }
 
   function fieldRow(obj, f, onTitleChange) {
@@ -699,7 +733,7 @@
     });
     return el("div", { class: "field" + (f.mono ? " mono" : "") },
       el("label", { for: id, text: (f.label || f.key) + (f.required ? " *" : "") }),
-      input, f.hint && el("span", { class: "hint", text: f.hint }));
+      input, hintNode(f, obj));
   }
 
   const WIDE = { textarea: 1, lines: 1, tags: 1, objectList: 1, image: 1, select: 1, icon: 1 };
@@ -1450,6 +1484,7 @@
 
   function buildTabs() {
     clear(tablist); clear(panels);
+    LIVE_HINTS = [];                                   // the old nodes are gone
     Object.keys(panelNodes).forEach(function (k) { delete panelNodes[k]; });
 
     TABS.forEach(function (group) {
@@ -1605,6 +1640,7 @@
      ==================================================================== */
   function touched() {
     updateDirty();
+    repaintHints();
     if (activeTab === "preview") sendPreview();
   }
 
